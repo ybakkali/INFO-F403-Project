@@ -24,8 +24,7 @@ Progname 	= {AlphaUpperCase}+{AlphaLowerCase}+{Alpha}*
 Varname 	= {AlphaLowerCase}+{AlphaNumeric}*
 Number		= [1-9] {Numeric}* | 0
 
-//LongComment     = "/*"[]*"*/"
-LongComment     ="/*" [^*] ~"*/" | "/*" "*"+ "/"
+LongComment     = "/*"(.|\n)*"*/"
 ShortComment    = "//".*
 
 %%// Identification of tokens
