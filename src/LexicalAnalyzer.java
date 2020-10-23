@@ -5,7 +5,7 @@
  * <a href="http://www.jflex.de/">JFlex</a> 1.7.0
  * from the specification file <tt>src/LexicalAnalyzer.flex</tt>
  */
-class Lexer {
+class LexicalAnalyzer {
 
   /** This character denotes the end of file */
   public static final int YYEOF = -1;
@@ -305,7 +305,7 @@ class Lexer {
    *
    * @param   in  the java.io.Reader to read input from.
    */
-  Lexer(java.io.Reader in) {
+  LexicalAnalyzer(java.io.Reader in) {
     this.zzReader = in;
   }
 

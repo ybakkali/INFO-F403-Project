@@ -1,41 +1,37 @@
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-public class Main{
+public class Main {
+
   public static void main(String[] args) {
     if (args.length != 1) {
       System.err.println("1 argument required");
       return;
     }
-    File file = new File(args[0]);
-    try {
-      FileReader reader = new FileReader(file);
-      Lexer analyser = new Lexer(reader);
-      Symbol currentSymbol;
+    try(FileReader fileReader = new FileReader(args[0])) {
+      LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(fileReader);
+      Symbol currentSymbol = lexicalAnalyzer.nextToken();
       List<Variable> variables = new ArrayList<>();
 
-      do {
-        currentSymbol = analyser.nextToken();
-        if (currentSymbol != null && currentSymbol.getType() != LexicalUnit.EOS) {
+      while ((currentSymbol == null) || currentSymbol.getType() != LexicalUnit.EOS) {
+        if (currentSymbol != null) {
           System.out.println(currentSymbol.toString());
           if (currentSymbol.getType() == LexicalUnit.VARNAME) {
-            if (!variableAlreadyExist(variables,currentSymbol.getValue().toString())) {
+            if (!variables.contains(new Variable(currentSymbol.getValue().toString(),-1))) {
               variables.add(new Variable(currentSymbol.getValue().toString(), currentSymbol.getLine()));
             }
           }
         }
-      } while (currentSymbol == null || currentSymbol.getType() != LexicalUnit.EOS);
-
+        currentSymbol = lexicalAnalyzer.nextToken();
+      }
       System.out.println("\nVariables");
-      Collections.sort(variables);
+      variables.sort(Comparator.naturalOrder());
       for (Variable variable : variables) {
         System.out.println(variable.getName() + "\t" + variable.getLine());
       }
-
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException | LexicalAnalyzer.InvalidCommentNestingException e) {
+      System.err.println(e);
     }
   }
 
@@ -56,17 +52,13 @@ public class Main{
     }
 
     @Override
+    public boolean equals(Object obj) {
+      return this.getName().equals(((Variable) obj).getName());
+    }
+
+    @Override
     public int compareTo(Variable variable) {
       return this.getName().compareTo(variable.getName());
     }
   }
-
-  private static boolean variableAlreadyExist(List<Variable> variables, String name) {
-    for (Variable variable:variables) {
-      if (variable.getName().equals(name)) {
-        return true;
-      }
-    }
-    return false;
-  }
-};
+}

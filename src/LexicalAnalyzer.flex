@@ -1,11 +1,13 @@
 %%// Options of the scanner
 
-%class Lexer	//Name
+%class LexicalAnalyzer	//Name
 %unicode		//Use unicode
 %line         	//Use line counter (yyline variable)
 %column       	//Use character counter by line (yycolumn variable)
 %type Symbol  //Says that the return type is Symbol
 %function nextToken
+
+%yylexthrow InvalidCommentNestingException
 
 //Declare exclusive states
 %xstate YYINITIAL, COMMENT_STATE
@@ -13,6 +15,11 @@
 //Declare variables
 %{
     private int nestedCommentCounter = 0;
+    public class InvalidCommentNestingException extends Exception {
+        public InvalidCommentNestingException(String message) {
+            super(message);
+        }
+    }
 %}
 
 // Return value of the program
@@ -21,7 +28,7 @@
             return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
         }
         else {
-            throw new java.io.IOException();
+            throw new InvalidCommentNestingException("Comment not closed");
         }
 %eofval}
 
@@ -53,7 +60,7 @@ CloseLongComment= "*/"
     // Comments
     {ShortComment}  {}
     {OpenLongComment}   {nestedCommentCounter++; yybegin(COMMENT_STATE);}
-    {CloseLongComment}  {throw new java.io.IOException();}
+    {CloseLongComment}  {throw new InvalidCommentNestingException("Closing without opening comment");}
 
     // Keywords
     "BEGINPROG"	{return new Symbol(LexicalUnit.BEGINPROG,yyline, yycolumn, yytext());}
