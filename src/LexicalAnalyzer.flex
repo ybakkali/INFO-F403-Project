@@ -38,7 +38,7 @@ AlphaUpperCase = [A-Z]
 AlphaLowerCase = [a-z]
 Alpha          = [A-Za-z]
 Numeric        = [0-9]
-AlphaNumeric   = [A-Z a-z 0-9]
+AlphaNumeric   = [A-Za-z0-9]
 
 Progname 	= {AlphaUpperCase}+[a-z0-9]{AlphaNumeric}*
 Varname 	= {AlphaLowerCase}[a-z0-9]*
