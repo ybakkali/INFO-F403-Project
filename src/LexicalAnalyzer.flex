@@ -36,15 +36,15 @@
 
 AlphaUpperCase = [A-Z]
 AlphaLowerCase = [a-z]
-Alpha          = {AlphaUpperCase}|{AlphaLowerCase}
+Alpha          = [A-Za-z]
 Numeric        = [0-9]
-AlphaNumeric   = {Alpha}|{Numeric}
+AlphaNumeric   = [A-Z a-z 0-9]
 
-Progname 	= {AlphaUpperCase}+{AlphaLowerCase}+{Alpha}*
-Varname 	= {AlphaLowerCase}+{AlphaNumeric}*
+Progname 	= {AlphaUpperCase}+[a-z0-9]{AlphaNumeric}*
+Varname 	= {AlphaLowerCase}[a-z0-9]*
 Number		= [1-9] {Numeric}* | 0
 
-String      = "\""[^]*"\""
+String      = "\"".*"\""
 
 ShortComment    = "//".*
 
@@ -55,7 +55,7 @@ CloseLongComment= "*/"
 
 <YYINITIAL> {
     // String
-    {String}    {System.out.println("String :" + yytext());}
+    {String}    {return new Symbol(LexicalUnit.STRING,yyline, yycolumn, yytext());}
 
     // Comments
     {ShortComment}  {}
