@@ -40,13 +40,12 @@
 
 AlphaUpperCase = [A-Z]
 AlphaLowerCase = [a-z]
-Alpha          = [A-Za-z]
 Numeric        = [0-9]
 AlphaNumeric   = [A-Za-z0-9]
 
 Progname 	= {AlphaUpperCase}+[a-z0-9]{AlphaNumeric}*
 Varname 	= {AlphaLowerCase}[a-z0-9]*
-Number		= [1-9] {Numeric}* | 0
+Number		= [1-9]{Numeric}*|0
 
 String      = "\"".*"\""
 
@@ -55,7 +54,7 @@ ShortComment    = "//".*
 OpenLongComment = "/*"
 CloseLongComment= "*/"
 
-Spacing=    [ \t]
+IllegalCharacters =[^ \t]
 
 %%// Identification of tokens
 
@@ -112,10 +111,11 @@ Spacing=    [ \t]
     "READ"		{return new Symbol(LexicalUnit.READ,yyline, yycolumn, yytext());}
 
     // Ignore spacing characters
-    {Spacing}  {}
+    // {Spacing}  {}
 
     // Illegal Characters
-    .          {throw new IllegalCharacterException('"' + yytext() + "\" is not a legal character");}
+    {IllegalCharacters}          {throw new IllegalCharacterException('"' + yytext() + "\" is not a legal character");}
+    . {}
 }
 
 <COMMENT_STATE> {
