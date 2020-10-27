@@ -30,7 +30,7 @@ public class Main {
       for (Variable variable : variables) {
         System.out.println(variable.getName() + "\t" + variable.getLine());
       }
-    } catch (IOException | LexicalAnalyzer.InvalidCommentException | LexicalAnalyzer.SyntaxException e) {
+    } catch (IOException | LexicalAnalyzer.InvalidCommentException | LexicalAnalyzer.LexicalException e) {
       System.err.println(e);
     }
   }

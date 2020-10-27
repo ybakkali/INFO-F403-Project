@@ -298,8 +298,8 @@ class LexicalAnalyzer {
                 super(message);
             }
         }
-        public class SyntaxException extends Exception {
-            public SyntaxException(String message) {
+        public class LexicalException extends Exception {
+            public LexicalException(String message) {
                 super(message);
             }
         }
@@ -535,7 +535,7 @@ class LexicalAnalyzer {
    * @return      the next token
    * @exception   java.io.IOException  if any I/O-Error occurs
    */
-  public Symbol nextToken() throws java.io.IOException, InvalidCommentException, SyntaxException {
+  public Symbol nextToken() throws java.io.IOException, InvalidCommentException, LexicalException {
     int zzInput;
     int zzAction;
 
@@ -681,7 +681,7 @@ class LexicalAnalyzer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { throw new SyntaxException("Syntax error at line " + yyline + " column " + yycolumn);
+            { throw new LexicalException("Syntax error at line " + yyline + " column " + yycolumn);
             } 
             // fall through
           case 33: break;

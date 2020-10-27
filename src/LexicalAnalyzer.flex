@@ -7,7 +7,7 @@
 %type Symbol  //Says that the return type is Symbol
 %function nextToken
 
-%yylexthrow InvalidCommentException, SyntaxException
+%yylexthrow InvalidCommentException, LexicalException
 
 //Declare exclusive states
 %xstate YYINITIAL, COMMENT_STATE
@@ -20,8 +20,8 @@
                 super(message);
             }
         }
-        public class SyntaxException extends Exception {
-            public SyntaxException(String message) {
+        public class LexicalException extends Exception {
+            public LexicalException(String message) {
                 super(message);
             }
         }
@@ -114,7 +114,7 @@ Spacing =" "|\t
     {Spacing}   {}
 
     // Syntax Error
-    .          {throw new SyntaxException("Syntax error at line " + yyline + " column " + yycolumn);}
+    .          {throw new LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
 }
 
 <COMMENT_STATE> {

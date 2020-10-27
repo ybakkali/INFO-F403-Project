@@ -6,7 +6,7 @@ BEGINPROG Factorial
   READ(number)              // Read a number from user input
   result := 1
 
-IF (number > -1) THENz
+IF (number > -1) THEN
   WHILE number > 0 DO
     result := result * number
     number := number - 1   // decrease number
