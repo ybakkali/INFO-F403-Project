@@ -10,10 +10,10 @@ BEGINPROG Minimum
   READ(number2)             // Read second number from user input
   result := 0
 
-IF (number1 < number2) THEN
-    result := number1
-ELSE
+IF (number1 > number2) THEN
     result := number2
+ELSE
+    result := number1
 ENDIF
 PRINT(result)
 ENDPROG
