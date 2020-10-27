@@ -7,7 +7,7 @@
 %type Symbol  //Says that the return type is Symbol
 %function nextToken
 
-%yylexthrow InvalidCommentNestingException
+%yylexthrow InvalidCommentException, IllegalCharacterException
 
 //Declare exclusive states
 %xstate YYINITIAL, COMMENT_STATE
@@ -15,21 +15,25 @@
 //Declare variables
 %{
     private int nestedCommentCounter = 0;
-    public class InvalidCommentNestingException extends Exception {
-        public InvalidCommentNestingException(String message) {
-            super(message);
+        public class InvalidCommentException extends Exception {
+            public InvalidCommentException(String message) {
+                super(message);
+            }
         }
-    }
+        public class IllegalCharacterException extends Exception {
+            public IllegalCharacterException(String message) {
+                super(message);
+            }
+        }
 %}
 
 // Return value of the program
 %eofval{
-    if(nestedCommentCounter == 0) {
-            return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
-        }
-        else {
-            throw new InvalidCommentNestingException("Comment not closed");
-        }
+    if(yystate() == COMMENT_STATE) {
+        throw new InvalidCommentException("Comment not closed");
+    } else {
+        return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
+    }
 %eofval}
 
 // Extended Regular Expressions
@@ -51,6 +55,8 @@ ShortComment    = "//".*
 OpenLongComment = "/*"
 CloseLongComment= "*/"
 
+Spacing=    [ \t]
+
 %%// Identification of tokens
 
 <YYINITIAL> {
@@ -60,7 +66,7 @@ CloseLongComment= "*/"
     // Comments
     {ShortComment}  {}
     {OpenLongComment}   {nestedCommentCounter++; yybegin(COMMENT_STATE);}
-    {CloseLongComment}  {throw new InvalidCommentNestingException("Closing without opening comment");}
+    {CloseLongComment}  {throw new InvalidCommentException("Closing without opening comment");}
 
     // Keywords
     "BEGINPROG"	{return new Symbol(LexicalUnit.BEGINPROG,yyline, yycolumn, yytext());}
@@ -105,8 +111,11 @@ CloseLongComment= "*/"
     "PRINT"	{return new Symbol(LexicalUnit.PRINT,yyline, yycolumn, yytext());}
     "READ"		{return new Symbol(LexicalUnit.READ,yyline, yycolumn, yytext());}
 
-    // Ignore other characters
-    .             {}
+    // Ignore spacing characters
+    {Spacing}  {}
+
+    // Illegal Characters
+    .          {throw new IllegalCharacterException('"' + yytext() + "\" is not a legal character");}
 }
 
 <COMMENT_STATE> {
