@@ -7,7 +7,7 @@
 %type Symbol  //Says that the return type is Symbol
 %function nextToken
 
-%yylexthrow InvalidCommentException, IllegalCharacterException
+%yylexthrow InvalidCommentException, SyntaxException
 
 //Declare exclusive states
 %xstate YYINITIAL, COMMENT_STATE
@@ -20,8 +20,8 @@
                 super(message);
             }
         }
-        public class IllegalCharacterException extends Exception {
-            public IllegalCharacterException(String message) {
+        public class SyntaxException extends Exception {
+            public SyntaxException(String message) {
                 super(message);
             }
         }
@@ -54,7 +54,7 @@ ShortComment    = "//".*
 OpenLongComment = "/*"
 CloseLongComment= "*/"
 
-IllegalCharacters =[^ \t]
+Spacing =" "|\t
 
 %%// Identification of tokens
 
@@ -110,12 +110,11 @@ IllegalCharacters =[^ \t]
     "PRINT"	{return new Symbol(LexicalUnit.PRINT,yyline, yycolumn, yytext());}
     "READ"		{return new Symbol(LexicalUnit.READ,yyline, yycolumn, yytext());}
 
-    // Ignore spacing characters
-    // {Spacing}  {}
+    // Ignore Spacing Characters
+    {Spacing}   {}
 
-    // Illegal Characters
-    {IllegalCharacters}          {throw new IllegalCharacterException('"' + yytext() + "\" is not a legal character");}
-    . {}
+    // Syntax Error
+    .          {throw new SyntaxException("Syntax error at line " + yyline + " column " + yycolumn);}
 }
 
 <COMMENT_STATE> {
