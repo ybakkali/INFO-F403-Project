@@ -1,0 +1,7 @@
+token: BEGINPROG      lexical unit: BEGINPROG
+token: NestedComment  lexical unit: PROGNAME
+token: \n             lexical unit: ENDLINE
+token: \n             lexical unit: ENDLINE
+token: \n             lexical unit: ENDLINE
+token: \n             lexical unit: ENDLINE
+token: \n             lexical unit: ENDLINE
