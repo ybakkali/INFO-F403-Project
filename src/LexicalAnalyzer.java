@@ -293,16 +293,6 @@ class LexicalAnalyzer {
 
   /* user code: */
     private int nestedCommentCounter = 0;
-        public class InvalidCommentException extends Exception {
-            public InvalidCommentException(String message) {
-                super(message);
-            }
-        }
-        public class LexicalException extends Exception {
-            public LexicalException(String message) {
-                super(message);
-            }
-        }
 
 
   /**
@@ -535,7 +525,7 @@ class LexicalAnalyzer {
    * @return      the next token
    * @exception   java.io.IOException  if any I/O-Error occurs
    */
-  public Symbol nextToken() throws java.io.IOException, InvalidCommentException, LexicalException {
+  public Symbol nextToken() throws java.io.IOException, exceptions.LexicalException, exceptions.SyntaxException {
     int zzInput;
     int zzAction;
 
@@ -672,7 +662,7 @@ class LexicalAnalyzer {
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
           {     if(yystate() == COMMENT_STATE) {
-        throw new InvalidCommentException("Comment not closed");
+        throw new exceptions.SyntaxException("Comment not closed");
     } else {
         return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
     }
@@ -681,7 +671,7 @@ class LexicalAnalyzer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { throw new LexicalException("Syntax error at line " + yyline + " column " + yycolumn);
+            { throw new exceptions.LexicalException("Syntax error at line " + yyline + " column " + yycolumn);
             } 
             // fall through
           case 33: break;
@@ -766,7 +756,7 @@ class LexicalAnalyzer {
             // fall through
           case 49: break;
           case 18: 
-            { throw new InvalidCommentException("Closing without opening comment");
+            { throw new exceptions.SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);
             } 
             // fall through
           case 50: break;

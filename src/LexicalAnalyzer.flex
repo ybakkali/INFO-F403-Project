@@ -7,7 +7,7 @@
 %type Symbol  //Says that the return type is Symbol
 %function nextToken
 
-%yylexthrow InvalidCommentException, LexicalException
+%yylexthrow exceptions.LexicalException, exceptions.SyntaxException
 
 //Declare exclusive states
 %xstate YYINITIAL, COMMENT_STATE
@@ -15,22 +15,12 @@
 //Declare variables
 %{
     private int nestedCommentCounter = 0;
-        public class InvalidCommentException extends Exception {
-            public InvalidCommentException(String message) {
-                super(message);
-            }
-        }
-        public class LexicalException extends Exception {
-            public LexicalException(String message) {
-                super(message);
-            }
-        }
 %}
 
 // Return value of the program
 %eofval{
     if(yystate() == COMMENT_STATE) {
-        throw new InvalidCommentException("Comment not closed");
+        throw new exceptions.SyntaxException("Comment not closed");
     } else {
         return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
     }
@@ -47,8 +37,6 @@ Progname 	= {AlphaUpperCase}+[a-z0-9]{AlphaNumeric}*
 Varname 	= {AlphaLowerCase}[a-z0-9]*
 Number		= [1-9]{Numeric}*|0
 
-String      = "\"".*"\""
-
 ShortComment    = "//".*
 
 OpenLongComment = "/*"
@@ -59,71 +47,62 @@ Spacing =" "|\t
 %%// Identification of tokens
 
 <YYINITIAL> {
-    // String
-    {String}    {return new Symbol(LexicalUnit.STRING,yyline, yycolumn, yytext());}
 
-    // Comments
+    {Progname}	    {return new Symbol(LexicalUnit.PROGNAME,yyline, yycolumn, yytext());}
+    {Varname}	    {return new Symbol(LexicalUnit.VARNAME,yyline, yycolumn, yytext());}
+    {Number}	    {return new Symbol(LexicalUnit.NUMBER,yyline, yycolumn, yytext());}
     {ShortComment}  {}
-    {OpenLongComment}   {nestedCommentCounter++; yybegin(COMMENT_STATE);}
-    {CloseLongComment}  {throw new InvalidCommentException("Closing without opening comment");}
 
     // Keywords
     "BEGINPROG"	{return new Symbol(LexicalUnit.BEGINPROG,yyline, yycolumn, yytext());}
     "ENDPROG"	{return new Symbol(LexicalUnit.ENDPROG,yyline, yycolumn, yytext());}
 
-    // Progname
-    {Progname}	{return new Symbol(LexicalUnit.PROGNAME,yyline, yycolumn, yytext());}
+    "IF"		{return new Symbol(LexicalUnit.IF,yyline, yycolumn, yytext());}
+    "THEN"		{return new Symbol(LexicalUnit.THEN,yyline, yycolumn, yytext());}
+    "ELSE"		{return new Symbol(LexicalUnit.ELSE,yyline, yycolumn, yytext());}
+    "ENDIF"	    {return new Symbol(LexicalUnit.ENDIF,yyline, yycolumn, yytext());}
 
-    // Endline
-    "\n"		{return new Symbol(LexicalUnit.ENDLINE,yyline, yycolumn, "\\n");}
+    "WHILE"	    {return new Symbol(LexicalUnit.WHILE,yyline, yycolumn, yytext());}
+    "DO"		{return new Symbol(LexicalUnit.DO,yyline, yycolumn, yytext());}
+    "ENDWHILE"	{return new Symbol(LexicalUnit.ENDWHILE,yyline, yycolumn, yytext());}
 
-    // Stuff
-    ","		{return new Symbol(LexicalUnit.COMMA,yyline, yycolumn, yytext());}
-    {Varname}	{return new Symbol(LexicalUnit.VARNAME,yyline, yycolumn, yytext());}
-    ":="		{return new Symbol(LexicalUnit.ASSIGN,yyline, yycolumn, yytext());}
-    {Number}	{return new Symbol(LexicalUnit.NUMBER,yyline, yycolumn, yytext());}
-    "("		{return new Symbol(LexicalUnit.LPAREN,yyline, yycolumn, yytext());}
-    ")"		{return new Symbol(LexicalUnit.RPAREN,yyline, yycolumn, yytext());}
+    "PRINT"	    {return new Symbol(LexicalUnit.PRINT,yyline, yycolumn, yytext());}
+    "READ"		{return new Symbol(LexicalUnit.READ,yyline, yycolumn, yytext());}
 
-    // idk
+    // Arithmetical operators
     "-"		{return new Symbol(LexicalUnit.MINUS,yyline, yycolumn, yytext());}
     "+"		{return new Symbol(LexicalUnit.PLUS,yyline, yycolumn, yytext());}
     "*"		{return new Symbol(LexicalUnit.TIMES,yyline, yycolumn, yytext());}
     "/"		{return new Symbol(LexicalUnit.DIVIDE,yyline, yycolumn, yytext());}
 
-    // Relational operators
+    // Utility operators
+    ","		{return new Symbol(LexicalUnit.COMMA,yyline, yycolumn, yytext());}
+    ":="	{return new Symbol(LexicalUnit.ASSIGN,yyline, yycolumn, yytext());}
+    "("		{return new Symbol(LexicalUnit.LPAREN,yyline, yycolumn, yytext());}
+    ")"		{return new Symbol(LexicalUnit.RPAREN,yyline, yycolumn, yytext());}
     "="		{return new Symbol(LexicalUnit.EQ,yyline, yycolumn, yytext());}
     ">"		{return new Symbol(LexicalUnit.GT,yyline, yycolumn, yytext());}
 
-    //Condition keyword
-    "IF"		{return new Symbol(LexicalUnit.IF,yyline, yycolumn, yytext());}
-    "THEN"		{return new Symbol(LexicalUnit.THEN,yyline, yycolumn, yytext());}
-    "ELSE"		{return new Symbol(LexicalUnit.ELSE,yyline, yycolumn, yytext());}
-    "ENDIF"	{return new Symbol(LexicalUnit.ENDIF,yyline, yycolumn, yytext());}
+    // End of line
+    "\n"	{return new Symbol(LexicalUnit.ENDLINE,yyline, yycolumn, "\\n");}
 
-    //Loop keyword
-    "WHILE"	{return new Symbol(LexicalUnit.WHILE,yyline, yycolumn, yytext());}
-    "DO"		{return new Symbol(LexicalUnit.DO,yyline, yycolumn, yytext());}
-    "ENDWHILE"	{return new Symbol(LexicalUnit.ENDWHILE,yyline, yycolumn, yytext());}
-
-    //Functions
-    "PRINT"	{return new Symbol(LexicalUnit.PRINT,yyline, yycolumn, yytext());}
-    "READ"		{return new Symbol(LexicalUnit.READ,yyline, yycolumn, yytext());}
+    // Comments
+    {OpenLongComment}   {nestedCommentCounter++; yybegin(COMMENT_STATE);}
+    {CloseLongComment}  {throw new exceptions.SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);}
 
     // Ignore Spacing Characters
     {Spacing}   {}
 
     // Syntax Error
-    .          {throw new LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
+    .          {throw new exceptions.LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
 }
 
 <COMMENT_STATE> {
     {OpenLongComment}   {nestedCommentCounter++;}
-    {CloseLongComment}  {
-                                nestedCommentCounter--;
-                                if(nestedCommentCounter == 0) {
-                                    yybegin(YYINITIAL);
-                                }
+    {CloseLongComment}  {nestedCommentCounter--;
+                        if(nestedCommentCounter == 0) {yybegin(YYINITIAL);}
                         }
+
+    // Ignore comment content
     [^]       {}
 }
