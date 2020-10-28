@@ -76,7 +76,6 @@ Spacing =" "|\t
     "/"		{return new Symbol(LexicalUnit.DIVIDE,yyline, yycolumn, yytext());}
 
     // Utility operators
-    ","		{return new Symbol(LexicalUnit.COMMA,yyline, yycolumn, yytext());}
     ":="	{return new Symbol(LexicalUnit.ASSIGN,yyline, yycolumn, yytext());}
     "("		{return new Symbol(LexicalUnit.LPAREN,yyline, yycolumn, yytext());}
     ")"		{return new Symbol(LexicalUnit.RPAREN,yyline, yycolumn, yytext());}
