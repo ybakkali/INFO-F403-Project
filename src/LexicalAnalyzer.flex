@@ -42,7 +42,9 @@ ShortComment    = "//".*
 OpenLongComment = "/*"
 CloseLongComment= "*/"
 
-Spacing =" "|\t
+Spacing = " "|\t
+
+EndOfLine = \n|\r\n|\r
 
 %%// Identification of tokens
 
@@ -83,7 +85,8 @@ Spacing =" "|\t
     ">"		{return new Symbol(LexicalUnit.GT,yyline, yycolumn, yytext());}
 
     // End of line
-    "\n"	{return new Symbol(LexicalUnit.ENDLINE,yyline, yycolumn, "\\n");}
+    // "\n"	{return new Symbol(LexicalUnit.ENDLINE,yyline, yycolumn, "\\n");}
+    {EndOfLine} {return new Symbol(LexicalUnit.ENDLINE,yyline, yycolumn, "\\n");}
 
     // Comments
     {OpenLongComment}   {nestedCommentCounter++; yybegin(COMMENT_STATE);}
@@ -93,7 +96,7 @@ Spacing =" "|\t
     {Spacing}   {}
 
     // Syntax Error
-    .          {throw new exceptions.LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
+    [^]         {throw new exceptions.LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
 }
 
 <COMMENT_STATE> {
