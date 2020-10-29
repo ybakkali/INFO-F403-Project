@@ -85,7 +85,6 @@ EndOfLine = \n|\r\n|\r
     ">"		{return new Symbol(LexicalUnit.GT,yyline, yycolumn, yytext());}
 
     // End of line
-    // "\n"	{return new Symbol(LexicalUnit.ENDLINE,yyline, yycolumn, "\\n");}
     {EndOfLine} {return new Symbol(LexicalUnit.ENDLINE,yyline, yycolumn, "\\n");}
 
     // Comments
