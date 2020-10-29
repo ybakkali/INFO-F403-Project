@@ -21,7 +21,7 @@ public class Compiler {
             List<Symbol> tokens = lexicalAnalyse(fileReader);
             printTokens(tokens);
             printSymbolTable(tokens);
-        } catch (IOException | exceptions.SyntaxException | exceptions.LexicalException e) {
+        } catch (IOException | SyntaxException | LexicalException e) {
             e.printStackTrace();
         }
     }
@@ -31,11 +31,11 @@ public class Compiler {
      *
      * @param fileReader The FileReader objet that gives the code of the file specified
      * @return The list of tokens that the code contains
-     * @throws exceptions.LexicalException When a lexical problem is encountered
-     * @throws exceptions.SyntaxException When a syntax problem is encountered
+     * @throws LexicalException When a lexical problem is encountered
+     * @throws SyntaxException When a syntax problem is encountered
      * @throws IOException When another problem is encountered
      */
-    private List<Symbol> lexicalAnalyse(FileReader fileReader) throws exceptions.LexicalException, exceptions.SyntaxException, IOException {
+    public List<Symbol> lexicalAnalyse(FileReader fileReader) throws LexicalException, SyntaxException, IOException {
         List<Symbol> tokens = new ArrayList<>();
         LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(fileReader);
         Symbol currentSymbol = lexicalAnalyzer.nextToken();

@@ -1,5 +1,3 @@
-package exceptions;
-
 /**
  * The exception for lexical problems
  */

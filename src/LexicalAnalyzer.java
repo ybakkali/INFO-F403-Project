@@ -515,7 +515,7 @@ class LexicalAnalyzer {
    * @return      the next token
    * @exception   java.io.IOException  if any I/O-Error occurs
    */
-  public Symbol nextToken() throws java.io.IOException, exceptions.LexicalException, exceptions.SyntaxException {
+  public Symbol nextToken() throws java.io.IOException, LexicalException, SyntaxException {
     int zzInput;
     int zzAction;
 
@@ -652,7 +652,7 @@ class LexicalAnalyzer {
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
           {     if(yystate() == COMMENT_STATE) {
-        throw new exceptions.SyntaxException("Comment not closed");
+        throw new SyntaxException("Comment not closed");
     } else {
         return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
     }
@@ -661,7 +661,7 @@ class LexicalAnalyzer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { throw new exceptions.LexicalException("Syntax error at line " + yyline + " column " + yycolumn);
+            { throw new LexicalException("Syntax error at line " + yyline + " column " + yycolumn);
             } 
             // fall through
           case 31: break;
@@ -736,7 +736,7 @@ class LexicalAnalyzer {
             // fall through
           case 45: break;
           case 16: 
-            { throw new exceptions.SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);
+            { throw new SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);
             } 
             // fall through
           case 46: break;

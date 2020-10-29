@@ -20,11 +20,11 @@
 // Return value of the program
 %eofval{
     if(yystate() == COMMENT_STATE) {
-        throw new exceptions.SyntaxException("Comment not closed");
-    } else {
-        return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
-    }
-%eofval}
+            throw new SyntaxException("Comment not closed");
+        } else {
+            return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
+        }
+    %eofval}
 
 // Extended Regular Expressions
 
@@ -89,13 +89,13 @@ EndOfLine = \n|\r\n|\r
 
     // Comments
     {OpenLongComment}   {nestedCommentCounter++; yybegin(COMMENT_STATE);}
-    {CloseLongComment}  {throw new exceptions.SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);}
+    {CloseLongComment}  {throw new SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);}
 
     // Ignore Spacing Characters
     {Spacing}   {}
 
     // Syntax Error
-    [^]         {throw new exceptions.LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
+    [^]         {throw new LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
 }
 
 <COMMENT_STATE> {
