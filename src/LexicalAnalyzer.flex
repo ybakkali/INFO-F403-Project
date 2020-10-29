@@ -7,7 +7,7 @@
 %type Symbol  //Says that the return type is Symbol
 %function nextToken
 
-%yylexthrow exceptions.LexicalException, exceptions.SyntaxException
+%yylexthrow LexicalException, SyntaxException
 
 //Declare exclusive states
 %xstate YYINITIAL, COMMENT_STATE
@@ -24,7 +24,7 @@
         } else {
             return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
         }
-    %eofval}
+%eofval}
 
 // Extended Regular Expressions
 

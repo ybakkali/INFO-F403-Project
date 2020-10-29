@@ -652,10 +652,10 @@ class LexicalAnalyzer {
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
           {     if(yystate() == COMMENT_STATE) {
-        throw new SyntaxException("Comment not closed");
-    } else {
-        return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
-    }
+            throw new SyntaxException("Comment not closed");
+        } else {
+            return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
+        }
  }
       }
       else {
