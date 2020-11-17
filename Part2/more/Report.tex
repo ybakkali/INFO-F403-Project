@@ -1,0 +1,192 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+
+\geometry{top=100px, bottom=100px, left=75px, right=75px}
+
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+
+
+        \Huge
+        \textbf{Introduction to language theory and compiling}
+        \vspace{0.25cm}
+
+        \LARGE
+        \textbf{INFO-F-403}
+
+        \vspace{0.25cm}
+        \LARGE
+        \text{Project : Part 1}
+
+        \vspace{0.25cm}
+        \textit{27 October 2020}
+
+        \vspace{3cm}
+           \Large
+        \textbf{BAKKALI Yahya : 000445166 \\}
+        \textbf{HAUWAERT Maxime : 000461714 \\}
+
+
+        \vspace{2cm}
+
+        \textsc{Université Libre de Bruxelles (ULB)}
+
+
+    \end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+In this project it has been decided to design and write a compiler for a new programming language named "Fortr-S".
+Fortr-S is a simple imperative language created to replace and named after the old programming language "Fortran".
+Fortran's first appearance dates back to 1957 and is now inadequate for today's programming needs.
+Fortr-S has the ability to determine if a word is whether a keyword, the name of the program or the name of a variable just by looking at the letters that compose the word. In this first part of the project, the lexical analyzer will be implemented.
+
+\section{Implementation}
+\subsection{Tools}
+JFlex is used to generate a lexical analyzer, based on deterministic finite automata (DFAs), with defined rules. This lexical analyzer gives an easy way to extract every token of code. Each time a token is detected JFlex execute a Java code. The rules are expressed with regular expressions. \\
+Java is used to code and execute the compiler with all classes needed for the compiler to work.
+
+\subsection{Regular Expressions}
+\subsubsection{Definition}
+In order to improve the readability aliases have been used.
+\begin{center}
+\begin{tabular}{ |c|c|c| }
+ \hline
+ Regular expression & Description & Alias \\
+ \hline
+ $[A-Z]$ & Accept any uppercase letter & AlphaUpperCase \\
+ $[a-z]$ & Accept any lowercase letter & AlphaLowerCase \\
+ $[0-9]$ & Accept any digit & Numeric \\
+ $[A-Z a-z0-9]$ & Accept any digit or letter & AlphaNumeric \\
+ \hline
+\end{tabular}
+\end{center}
+%\subsubsection{Convention}
+\subsubsection{Program names}
+The names of the programs should contains only letters and digits starting with an uppercase letter and should not contain only uppercase letters.
+$$\{AlphaUpperCase\} + [a-z0-9] \{AlphaNumeric\}*$$
+
+\subsubsection{Variable names}
+The names of the variables should contains only lowercase letters and digits starting with a lowercase letter.
+$$\{AlphaLowerCase\} [a-z0-9]*$$
+
+\subsubsection{Numbers}
+The numbers should not have leading zeroes.
+$$\{[1-9] \{Numeric\}*\} | 0$$
+
+\subsubsection{Line terminators}
+There are three types of line terminator for Unix, Windows and Mac OS
+$$\backslash n | \backslash n\backslash r | \backslash r$$
+
+\subsubsection{Comments}
+\paragraph{Short comments}
+The short comments start with // and end automatically before the end of the line.
+$$"//".*$$
+\paragraph{Long comments}
+To handle long comment, two rules and an exclusive state "\texttt{COMMENT\_STATE}" were added. When a new long comment begins the lexer switch to the state \texttt{COMMENT\_STATE}. In the \texttt{COMMENT\_STATE} if a new long comment is detected an exception is thrown and if the end of a long comment is detected the lexer switch back to the initial state.
+$$OpenLongComment: "/*"$$
+$$CloseLongComment: "*/"$$
+\subsubsection{Perfect match}
+And there is also some tokens that need to be match as they are defined in the FORTR-S syntax:
+    \begin{itemize}
+        \item Keywords : BEGINPROG, ENDPROG, IF, THEN, ENDIF, ELSE, WHILE, DO, ENDWHILE, PRINT, READ
+        \item Arithmetical operators : -, +, *, /
+        \item Utility operator : := (the assign operator), =, $>$
+        \item Parenthesis : (, )
+    \end{itemize}
+
+\subsubsection{Spacing} To ignore spacing characters, the space and the tab character the following rule was added with a void code to be executed.
+    $$"\hspace{5pt} "|\backslash t$$
+
+\subsubsection{Other} To catch lexical errors the following rule was added and the code associated with it throws a $LexicalException$. Because everything that falls in this category doesn't exist in the Fortr-S lexicon.
+    $$[\string ^]$$
+
+\subsection{Explanation and hypothesis}
+\subsubsection{Explanation}
+\begin{itemize}
+    \item Each time a token is detected the analyzer returns a Symbol object with a LexicalUnit type and with value of the token, the only exception is for the comments as their content is discarded.
+
+    \item The lexical analyzer takes as an argument the file containing the code to be analyzed. The program prints every token of the code then print the name of all the variables followed by the line of its first occurrence.
+
+    \item The symbol table contains all recognised variables, in lexicographical (alphabetical) order. To get such a table a TreeMap has been used. Each time a VarName is encountered it is put in the map if it is the first time the variable has been encountered. The treeMap keeps the variables in lexicographical order at all times.
+\end{itemize}
+\subsubsection{Hypothesis}
+Syntax errors were decided not to be handled as the next part, the syntax analyzer, is more appropriate.\\
+
+For example numbers: if 042 is written in the code, the lexer will split it into two parts 0 and 42. The future syntax analyzer will detect two numbers following each other and then will throw an error.\\
+
+The only exception is the long comment because comments are not part of the set of tokens returned so it's the only way to catch these errors.
+\subsubsection{Errors}
+Lexical errors are detected with the latest added rule and $LexicalException$ is thrown.
+\\\\
+Two syntax errors were handled:
+\begin{itemize}
+    \item When a long comment is closed without it being opened first. It is detected when the lexer is in the initial state and a $CloseLongComment$ is detected.
+    \item When the end of the file is reached and a long comment wasn't closed. It is detected in the \texttt{\%eofval}  statement if the lexer was in the \texttt{COMMENT\_STATE}.
+\end{itemize}
+In both cases the program throws a $SyntaxException$.
+
+\subsection{Classes}
+\hspace{0.5cm} The main code verify that the path of the file containing the source code to compile has been passed. Then it creates an instance of the $Compiler$ class then runs the $compile$ method and pass the path.\\
+
+The class $Compiler$ has two important methods:
+\begin{itemize}
+\item The method $lexicalAnalyse$ return the list of tokens of the code of the source file.
+\item The other method $compile$ is the main one, it calls $lexicalAnalyse$ and for the moment it just prints the tokens and the symbol table.
+\end{itemize}
+
+The two types of exception are placed in the $exceptions$ package.
+
+\section{Nested comments (bonus)}
+The problem of nested comments is similar to the problem of the well-parenthesised words with the open parenthesis replaced by "/*" and the closed one by "*/". The language that accept "well-commented" $L_{/**/}$ words is not regular. The use of a counter is needed to count the number of current open comments.
+
+\subsection{Example}
+$$
+L = \{/*,*/\}^* \ne L_{/**/}
+$$
+
+\begin{equation}
+  \notag
+  \left.\begin{aligned}
+  /**/*/\in L\\
+  *//**/\in L\\
+  /*/**/\in L
+\end{aligned}\right\} \notin L_{/**/}
+\end{equation}
+
+Note: the language of Fortr-S is more complicated but in this problem it is useless to describe to whole language as the things in and out of the comments do not matter.
+
+\subsection{Implementation}
+A new counter variable was added and several things had to be changed.
+When a new long comment is detected the counter is set to 1 before switching to the \texttt{COMMENT\_STATE}.\\
+
+When the lexer is in the \texttt{COMMENT\_STATE} :
+\begin{itemize}
+\item When a new long comment is detected, instead of throwing an exception, the counter is increased.\\
+\item When the end of a long comment is detected the counter is decreased and when the counter is equal to $0$ the lexer switch back to the initial state.
+\end{itemize}
+
+\section{Description of example files}
+Three example files have been added:
+\begin{itemize}
+\item Maximum: a simple code that ask the user two numbers and prints the maximum. It doesn't contain any error.
+\item Minimum: a simple code that ask the user two numbers and prints the minimum. It doesn't contain any error with well-nested comments.
+\item NestedComment: a code with comments but without instructions. It contains an error because there is an extra "*/" at the 18th line.
+\end{itemize}
+
+For each source code example there is a ".output" with the expected result from the lexical analyzer.
+
+\section{Conclusion}
+This first part of the project is essential for the compiler to be working properly. The lexical analyzer must be working flawlessly, otherwise the syntax analyzer will not work as expected.
+\end{document}
