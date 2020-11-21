@@ -19,8 +19,9 @@ public class Compiler {
     public void compile(String filePath){
         try(FileReader fileReader = new FileReader(filePath)) {
             List<Symbol> tokens = lexicalAnalyse(fileReader);
-            printTokens(tokens);
-            printSymbolTable(tokens);
+            ParseTree parseTree = syntaxAnalyse(tokens);
+            // printTokens(tokens);
+            // printSymbolTable(tokens);
         } catch (IOException | SyntaxException | LexicalException e) {
             e.printStackTrace();
         }
@@ -46,6 +47,11 @@ public class Compiler {
             currentSymbol = lexicalAnalyzer.nextToken();
         }
         return tokens;
+    }
+
+    public ParseTree syntaxAnalyse(List<Symbol> tokens) throws SyntaxException {
+        SyntaxAnalyser syntaxAnalyser = new SyntaxAnalyser(tokens);
+        return syntaxAnalyser.analyse();
     }
 
     /**

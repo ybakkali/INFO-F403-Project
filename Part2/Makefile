@@ -1,5 +1,5 @@
 all:
-	jflex src/LexicalAnalyzer.flex
+	# jflex src/LexicalAnalyzer.flex
 	javac -d bin -cp src/ src/Main.java
 	jar cfe dist/Part1.jar Main -C bin .
 
