@@ -1,9 +1,11 @@
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class SyntaxAnalyser {
     private final List<Symbol> tokens;
     private int index;
-    private ParseTree parseTree;
+    private List<Integer> leftMostDerivation;
 
     public SyntaxAnalyser(List<Symbol> tokens) {
         this.tokens = tokens;
@@ -11,266 +13,459 @@ public class SyntaxAnalyser {
     }
 
     public ParseTree analyse() throws SyntaxException {
-        program();
-        this.parseTree = new ParseTree(this.tokens.get(this.index));
-        return this.parseTree;
+        this.index = 0;
+        this.leftMostDerivation = new LinkedList<>();
+
+        return program();
     }
 
     private void match(LexicalUnit expectedType) throws SyntaxException {
         Symbol currentToken = this.tokens.get(this.index);
         if (currentToken.getType() != expectedType) {
-            throw new SyntaxException("Grammar error at line " + currentToken.getLine() + " column " + currentToken.getColumn() + '\n' + currentToken.toString());
+            throw new SyntaxException("Grammar error at line " + currentToken.getLine() + " column " + currentToken.getColumn());
+        }
+    }
+
+    private Symbol getCurrentToken() throws SyntaxException {
+        if (this.index < this.tokens.size())
+            return this.tokens.get(this.index);
+        else {
+            throw new SyntaxException("Error not enough token");
         }
     }
 
     private LexicalUnit getCurrentTokenType() throws SyntaxException {
-        if (this.index < this.tokens.size())
-        return this.tokens.get(this.index).getType();
-        else {
-            throw new SyntaxException("Error not enough token");
-        }
+        return getCurrentToken().getType();
     }
 
     private void nextToken() {
         this.index++;
     }
 
-    private void program() throws SyntaxException {
-        System.out.println("Program");
+    private ParseTree program() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Program"), list);
+
         match(LexicalUnit.BEGINPROG);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.PROGNAME);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.ENDLINE);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
-        code();
+
+        list.add(code());
+
         match(LexicalUnit.ENDPROG);
+        list.add(new ParseTree(getCurrentToken()));
+
+        return parseTree;
     }
 
-    private void code() throws SyntaxException {
-        System.out.println("Code");
+    private ParseTree code() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Code"), list);
+
         switch (getCurrentTokenType()) {
-            case ENDPROG:
+            case ENDLINE:
+                list.add(new ParseTree(getCurrentToken()));
+                nextToken();
+
+                list.add(code());
+                break;
+
+            case VARNAME:
+            case IF:
+            case WHILE:
+            case PRINT:
+            case READ:
+                list.add(instruction());
+
+                match(LexicalUnit.ENDLINE);
+                list.add(new ParseTree(getCurrentToken()));
+                nextToken();
+
+                list.add(code());
+                break;
+
+            case ENDPROG: // epsilon
             case ENDIF:
             case ELSE:
             case ENDWHILE:
-                return;
+                return null;
 
-            case ENDLINE:
-                nextToken();
-                code();
-                return;
-
-            case VARNAME:
-            case IF:
-            case WHILE:
-            case PRINT:
-            case READ:
-                instruction();
-                match(LexicalUnit.ENDLINE);
-                nextToken();
-                code();
-                return;
             default:
                 throw new SyntaxException("Error Code");
         }
+        return parseTree;
     }
 
-    private void instruction() throws SyntaxException {
-        System.out.println("Instruction");
+    private ParseTree instruction() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Instruction"), list);
+
         switch (getCurrentTokenType()) {
             case VARNAME:
-                assign(); return;
+                list.add(assign());
+                break;
+
             case IF:
-                if_(); return;
+                list.add(if_());
+                break;
             case WHILE:
-                while_(); return;
+                list.add(while_());
+                break;
+
             case PRINT:
-                print(); return;
+                list.add(print());
+                break;
+
             case READ:
-                read(); return;
+                list.add(read());
+                break;
+
             default:
                 throw new SyntaxException("Error Instruction");
         }
+        return parseTree;
     }
 
-    private void assign() throws SyntaxException {
-        System.out.println("Assign");
+    private ParseTree assign() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Assign"), list);
+
         match(LexicalUnit.VARNAME);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.ASSIGN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
-        expr();
+
+        list.add(expr());
+
+        return parseTree;
     }
 
-    private void expr() throws SyntaxException {
-        System.out.println("Expr");
-        prod();
-        exprPrime();
+    private ParseTree expr() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Expr"), list);
+
+        list.add(prod());
+
+        list.add(exprPrime());
+
+        return parseTree;
     }
 
-    private void exprPrime() throws SyntaxException {
-        System.out.println("ExprPrime");
+    private ParseTree exprPrime() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Expr'"), list);
         switch (getCurrentTokenType()) {
             case PLUS:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                prod();
-                exprPrime();
-                return;
+
+                list.add(prod());
+
+                list.add(exprPrime());
+
+                break;
+
             case MINUS:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                prod();
-                exprPrime();
-                return;
-            default: // TODO
-                return;
+
+                list.add(prod());
+
+                list.add(exprPrime());
+
+                break;
+
+            case ENDLINE: // Epsilon
+            case RPAREN:
+            case EQ:
+            case GT:
+                return null;
+
+            default:
+                throw new SyntaxException("Error Expr'");
         }
+        return parseTree;
     }
 
-    private void prod() throws SyntaxException {
-        System.out.println("Prod");
-        atom();
-        prodPrime();
+    private ParseTree prod() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Prod"), list);
+
+        list.add(atom());
+
+        list.add(prodPrime());
+
+        return parseTree;
     }
 
-    private void prodPrime() throws SyntaxException {
-        System.out.println("ProdPrime");
+    private ParseTree prodPrime() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Prod'"), list);
+
         switch (getCurrentTokenType()) {
             case TIMES:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                atom();
-                prodPrime();
-                return;
+
+                list.add(atom());
+
+                list.add(prodPrime());
+
+                break;
+
             case DIVIDE:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                atom();
-                prodPrime();
-                return;
-            default: // TODO
-                return;
+
+                list.add(atom());
+
+                list.add(prodPrime());
+
+                break;
+            case ENDLINE: // Epsilon 18
+            case RPAREN:
+            case MINUS:
+            case PLUS:
+            case EQ:
+            case GT:
+                return null;
+
+            default:
+                throw new SyntaxException("Error Prod'");
         }
+        return parseTree;
     }
 
-    private void atom() throws SyntaxException {
-        System.out.println("Atom");
+    private ParseTree atom() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Atom"), list);
+
         switch (getCurrentTokenType()) {
             case MINUS:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                atom();
-                return;
+
+                list.add(atom());
+
+                break;
+
             case NUMBER:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                return;
+                break;
+
             case VARNAME:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                return;
+                break;
             case LPAREN:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                expr();
+
+                list.add(expr());
+
                 match(LexicalUnit.RPAREN);
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                return;
-            default: // TODO
+
+                break;
+
+            default:
+                throw new SyntaxException("Error Atom");
         }
+        return parseTree;
     }
 
-    private void if_() throws SyntaxException {
-        System.out.println("If");
+    private ParseTree if_() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("If"), list);
+
         match(LexicalUnit.IF);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.LPAREN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
-        cond();
+
+        list.add(cond());
+
         match(LexicalUnit.RPAREN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.THEN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.ENDLINE);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
-        code();
-        ifTail();
+
+        list.add(code());
+
+        list.add(ifTail());
+
+        return parseTree;
     }
 
-    private void ifTail() throws SyntaxException {
-        System.out.println("IfTail");
+    private ParseTree ifTail() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("IfTail"), list);
+
         switch (getCurrentTokenType()) {
             case ELSE:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
+
                 match(LexicalUnit.ENDLINE);
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                code();
+
+                list.add(code());
+
                 match(LexicalUnit.ENDIF);
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                return;
+
+                break;
+
             case ENDIF:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                return;
+
+                break;
+
             default:
                 throw new SyntaxException("Error IfTail");
         }
+        return parseTree;
     }
 
-    private void cond() throws SyntaxException {
-        System.out.println("Cond");
-        expr();
-        comp();
-        expr();
+    private ParseTree cond() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Cond"), list);
+
+        list.add(expr());
+
+        list.add(comp());
+
+        list.add(expr());
+
+        return parseTree;
     }
 
-    private void comp() throws SyntaxException {
-        System.out.println("Comp");
+    private ParseTree comp() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Comp"), list);
+
         switch (getCurrentTokenType()) {
             case EQ:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                return;
+                break;
+
             case GT:
+                list.add(new ParseTree(getCurrentToken()));
                 nextToken();
-                return;
+                break;
+
             default:
                 throw new SyntaxException("Error Comp");
         }
+        return parseTree;
     }
 
-    private void while_() throws SyntaxException {
-        System.out.println("While");
+    private ParseTree while_() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("While"), list);
+
         match(LexicalUnit.WHILE);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.LPAREN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
-        cond();
+
+        list.add(cond());
+
         match(LexicalUnit.RPAREN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.DO);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.ENDLINE);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
-        code();
+
+        list.add(code());
+
         match(LexicalUnit.ENDWHILE);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
+        return parseTree;
     }
 
-    private void print() throws SyntaxException {
-        System.out.println("Print");
+    private ParseTree print() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Print"), list);
+
         match(LexicalUnit.PRINT);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.LPAREN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.VARNAME);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.RPAREN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
+        return parseTree;
     }
 
-    private void read() throws SyntaxException {
-        System.out.println("Read");
+    private ParseTree read() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+        ParseTree parseTree = new ParseTree(new Symbol("Read"), list);
+
         match(LexicalUnit.READ);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.LPAREN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.VARNAME);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
         match(LexicalUnit.RPAREN);
+        list.add(new ParseTree(getCurrentToken()));
         nextToken();
+
+        return parseTree;
     }
 
 }

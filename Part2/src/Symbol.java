@@ -29,6 +29,10 @@ public class Symbol{
 		this(unit,UNDEFINED_POSITION,UNDEFINED_POSITION,value);
 	}
 
+	public Symbol(Object value) {
+		this(null,UNDEFINED_POSITION,UNDEFINED_POSITION,value);
+	}
+
 	public boolean isTerminal(){
 		return this.type != null;
 	}
@@ -71,6 +75,11 @@ public class Symbol{
 	}
 
 	public String toTexString() { // TODO
-		return null;
+		if (isTerminal()) {
+			return this.type.toString();
+		}
+		else {
+			return "$<$" + this.value.toString() + "$>$";
+		}
 	}
 }

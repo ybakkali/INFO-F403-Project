@@ -20,6 +20,7 @@ public class Compiler {
         try(FileReader fileReader = new FileReader(filePath)) {
             List<Symbol> tokens = lexicalAnalyse(fileReader);
             ParseTree parseTree = syntaxAnalyse(tokens);
+            System.out.println(parseTree.toLaTeX());
             // printTokens(tokens);
             // printSymbolTable(tokens);
         } catch (IOException | SyntaxException | LexicalException e) {
