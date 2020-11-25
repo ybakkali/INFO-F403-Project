@@ -4,35 +4,34 @@ import compiler.exceptions.SyntaxException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class SyntaxAnalyser {
-    private final List<Symbol> tokens;
-    private int index;
+    private final Stack<Symbol> tokens;
     private List<Integer> leftMostDerivation;
     private ParseTree parseTree;
 
     public SyntaxAnalyser(List<Symbol> tokens) {
-        this.tokens = tokens;
-        this.index = 0;
+        this.tokens = new Stack<>();
+        this.tokens.addAll(tokens);
     }
 
     public void analyse() throws SyntaxException {
-        this.index = 0;
         this.leftMostDerivation = new ArrayList<>();
 
-        parseTree = program();
+        this.parseTree = program();
     }
 
     private void match(LexicalUnit expectedType) throws SyntaxException {
-        Symbol currentToken = this.tokens.get(this.index);
+        Symbol currentToken = this.tokens.pop();
         if (currentToken.getType() != expectedType) {
             throw new SyntaxException("Grammar error at line " + currentToken.getLine() + " column " + currentToken.getColumn());
         }
     }
 
     private Symbol getCurrentToken() throws SyntaxException {
-        if (this.index < this.tokens.size())
-            return this.tokens.get(this.index);
+        if (!this.tokens.isEmpty())
+            return this.tokens.peek();
         else {
             throw new SyntaxException("Error not enough token");
         }
@@ -42,30 +41,25 @@ public class SyntaxAnalyser {
         return getCurrentToken().getType();
     }
 
-    private void nextToken() {
-        this.index++;
-    }
-
     private ParseTree program() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(1);
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.BEGINPROG);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.PROGNAME);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
-        match(LexicalUnit.ENDLINE);
+
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.ENDLINE);
+
 
         list.add(code());
 
-        match(LexicalUnit.ENDPROG);
         list.add(new ParseTree(getCurrentToken()));
+        match(LexicalUnit.ENDPROG);
 
         return new ParseTree(new Symbol("Program"), list);
     }
@@ -77,7 +71,6 @@ public class SyntaxAnalyser {
             case ENDLINE:
                 leftMostDerivation.add(3);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
 
                 list.add(code());
                 break;
@@ -90,9 +83,8 @@ public class SyntaxAnalyser {
                 leftMostDerivation.add(2);
                 list.add(instruction());
 
-                match(LexicalUnit.ENDLINE);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.ENDLINE);
 
                 list.add(code());
                 break;
@@ -148,13 +140,11 @@ public class SyntaxAnalyser {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(10);
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.VARNAME);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
-        match(LexicalUnit.ASSIGN);
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.ASSIGN);
 
         list.add(expr());
 
@@ -179,7 +169,7 @@ public class SyntaxAnalyser {
             case PLUS:
                 leftMostDerivation.add(12);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.PLUS);
 
                 list.add(prod());
 
@@ -190,7 +180,7 @@ public class SyntaxAnalyser {
             case MINUS:
                 leftMostDerivation.add(13);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.MINUS);
 
                 list.add(prod());
 
@@ -229,7 +219,7 @@ public class SyntaxAnalyser {
             case TIMES:
                 leftMostDerivation.add(16);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.TIMES);
 
                 list.add(atom());
 
@@ -240,7 +230,7 @@ public class SyntaxAnalyser {
             case DIVIDE:
                 leftMostDerivation.add(17);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.DIVIDE);
 
                 list.add(atom());
 
@@ -269,7 +259,7 @@ public class SyntaxAnalyser {
             case MINUS:
                 leftMostDerivation.add(19);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.MINUS);
 
                 list.add(atom());
 
@@ -278,24 +268,23 @@ public class SyntaxAnalyser {
             case NUMBER:
                 leftMostDerivation.add(20);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.NUMBER);
                 break;
 
             case VARNAME:
                 leftMostDerivation.add(21);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.VARNAME);
                 break;
             case LPAREN:
                 leftMostDerivation.add(22);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.LPAREN);
 
                 list.add(expr());
 
-                match(LexicalUnit.RPAREN);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.RPAREN);
 
                 break;
 
@@ -309,27 +298,22 @@ public class SyntaxAnalyser {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(23);
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.IF);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
-        match(LexicalUnit.LPAREN);
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.LPAREN);
 
         list.add(cond());
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.RPAREN);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.THEN);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
-        match(LexicalUnit.ENDLINE);
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.ENDLINE);
 
         list.add(code());
 
@@ -345,25 +329,22 @@ public class SyntaxAnalyser {
             case ELSE:
                 leftMostDerivation.add(24);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.ELSE);
 
-                match(LexicalUnit.ENDLINE);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.ENDLINE);
 
                 list.add(code());
 
-                match(LexicalUnit.ENDIF);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.ENDIF);
 
                 break;
 
             case ENDIF:
                 leftMostDerivation.add(25);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
-
+                match(LexicalUnit.ENDIF);
                 break;
 
             default:
@@ -392,13 +373,13 @@ public class SyntaxAnalyser {
             case EQ:
                 leftMostDerivation.add(27);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.EQ);
                 break;
 
             case GT:
                 leftMostDerivation.add(28);
                 list.add(new ParseTree(getCurrentToken()));
-                nextToken();
+                match(LexicalUnit.GT);
                 break;
 
             default:
@@ -411,33 +392,27 @@ public class SyntaxAnalyser {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(29);
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.WHILE);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
-        match(LexicalUnit.LPAREN);
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.LPAREN);
 
         list.add(cond());
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.RPAREN);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.DO);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
-        match(LexicalUnit.ENDLINE);
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.ENDLINE);
 
         list.add(code());
 
-        match(LexicalUnit.ENDWHILE);
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.ENDWHILE);
 
         return new ParseTree(new Symbol("While"), list);
     }
@@ -446,21 +421,17 @@ public class SyntaxAnalyser {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(30);
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.PRINT);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.LPAREN);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.VARNAME);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
-        match(LexicalUnit.RPAREN);
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.RPAREN);
 
         return new ParseTree(new Symbol("Print"), list);
     }
@@ -469,21 +440,17 @@ public class SyntaxAnalyser {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(31);
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.READ);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.LPAREN);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
+        list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.VARNAME);
-        list.add(new ParseTree(getCurrentToken()));
-        nextToken();
 
-        match(LexicalUnit.RPAREN);
         list.add(new ParseTree(getCurrentToken()));
-        nextToken();
+        match(LexicalUnit.RPAREN);
 
         return new ParseTree(new Symbol("Read"), list);
     }
@@ -557,8 +524,6 @@ public class SyntaxAnalyser {
                 return "<Instruction> [EndLine] <Code>";
             case 3:
                 return "[EndLine] <Code>";
-            case 4:
-                return "";
             case 5:
                 return "<Assign>";
             case 6:
@@ -577,16 +542,12 @@ public class SyntaxAnalyser {
                 return "+<Prod> <Expr'>";
             case 13:
                 return "-<Prod> <Expr'>";
-            case 14:
-                return "";
             case 15:
                 return "<Atom> <Prod'>";
             case 16:
                 return "*<Atom> <Prod'>";
             case 17:
                 return "/<Atom> <Prod'>";
-            case 18:
-                return "";
             case 19:
                 return "-<Atom>";
             case 20:
@@ -613,6 +574,10 @@ public class SyntaxAnalyser {
                 return "PRINT([VarName])";
             case 31:
                 return "READ([VarName])";
+            case 4:
+            case 14:
+            case 18:
+                return "";
         }
         return null;
     }
