@@ -13,7 +13,9 @@ public class SyntaxAnalyser {
 
     public SyntaxAnalyser(List<Symbol> tokens) {
         this.tokens = new Stack<>();
-        this.tokens.addAll(tokens);
+        for (int i = tokens.size() - 1; i >= 0; i--) {
+            this.tokens.push(tokens.get(i));
+        }
     }
 
     public void analyse() throws SyntaxException {
@@ -71,6 +73,7 @@ public class SyntaxAnalyser {
             case ENDLINE:
                 leftMostDerivation.add(3);
                 list.add(new ParseTree(getCurrentToken()));
+                match(LexicalUnit.ENDLINE);
 
                 list.add(code());
                 break;
