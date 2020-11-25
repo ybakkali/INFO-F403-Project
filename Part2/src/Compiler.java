@@ -9,6 +9,9 @@ public class Compiler {
     /**
      * Create a new Compiler
      */
+
+    private SyntaxAnalyser syntaxAnalyser;
+
     public Compiler() {}
 
     /**
@@ -16,11 +19,12 @@ public class Compiler {
      *
      * @param filePath The path of the file containing the code
      */
-    public void compile(String filePath){
+    public void compile(String filePath, boolean vOptionActivated){
         try(FileReader fileReader = new FileReader(filePath)) {
             List<Symbol> tokens = lexicalAnalyse(fileReader);
-            ParseTree parseTree = syntaxAnalyse(tokens);
-            System.out.println(parseTree.toLaTeX());
+            syntaxAnalyse(tokens);
+            printLeftMostDerivation(vOptionActivated);
+            //System.out.println(this.syntaxAnalyser.getParseTree().toLaTeX());
             // printTokens(tokens);
             // printSymbolTable(tokens);
         } catch (IOException | SyntaxException | LexicalException e) {
@@ -50,9 +54,9 @@ public class Compiler {
         return tokens;
     }
 
-    public ParseTree syntaxAnalyse(List<Symbol> tokens) throws SyntaxException {
-        SyntaxAnalyser syntaxAnalyser = new SyntaxAnalyser(tokens);
-        return syntaxAnalyser.analyse();
+    public void syntaxAnalyse(List<Symbol> tokens) throws SyntaxException {
+        this.syntaxAnalyser = new SyntaxAnalyser(tokens);
+        syntaxAnalyser.analyse();
     }
 
     /**
@@ -85,6 +89,24 @@ public class Compiler {
         System.out.println("\nVariables");
         for (Map.Entry<String, Integer> variable : variables.entrySet()) {
             System.out.println(variable.getKey() + "\t" + variable.getValue());
+        }
+    }
+
+    private void printLeftMostDerivation(boolean vOptionActivated) {
+        if (vOptionActivated) {
+            String s = "<Program>";
+            System.out.println(s);
+            for (Integer integer : this.syntaxAnalyser.getLeftMostDerivation()) {
+                s = s.replaceFirst(this.syntaxAnalyser.getVariable(integer), this.syntaxAnalyser.getRule(integer));
+                System.out.printf("%d -> %s%n", integer, s);
+            }
+        } else {
+            StringJoiner joiner = new StringJoiner(" ");
+            for (Integer integer : this.syntaxAnalyser.getLeftMostDerivation()) {
+                String s = Objects.toString(integer);
+                joiner.add(s);
+            }
+            System.out.println(joiner.toString() + ".");
         }
     }
 }

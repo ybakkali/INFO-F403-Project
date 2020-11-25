@@ -18,24 +18,24 @@ public class ParseTree {
     private List<ParseTree> children; // Its children, which are trees themselves
 
     /**
-     * Creates a singleton tree with only a root labeled by lbl.
+     * Creates a singleton tree with only a root labeled by label.
      * 
-     * @param lbl The label of the root
+     * @param label The label of the root
      */
-    public ParseTree(Symbol lbl) {
-        this.label = lbl;
-        this.children = new ArrayList<ParseTree>(); // This tree has no children
+    public ParseTree(Symbol label) {
+        this.label = label;
+        this.children = new ArrayList<>(); // This tree has no children
     }
 
     /**
-     * Creates a tree with root labeled by lbl and children chdn.
+     * Creates a tree with root labeled by label and children.
      * 
-     * @param lbl  The label of the root
-     * @param chdn Its children
+     * @param label  The label of the root
+     * @param children Its children
      */
-    public ParseTree(Symbol lbl, List<ParseTree> chdn) {
-        this.label = lbl;
-        this.children = chdn;
+    public ParseTree(Symbol label, List<ParseTree> children) {
+        this.label = label;
+        this.children = children;
     }
 
     /**
@@ -44,7 +44,7 @@ public class ParseTree {
     public String toLaTexTree() {
         StringBuilder treeTeX = new StringBuilder();
         treeTeX.append("[");
-        treeTeX.append("{" + label.toTexString() + "}");
+        treeTeX.append("{").append(label.toTexString()).append("}");
         treeTeX.append(" ");
 
         for (ParseTree child : children) {
