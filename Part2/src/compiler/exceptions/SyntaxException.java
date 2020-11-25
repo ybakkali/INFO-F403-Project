@@ -1,3 +1,5 @@
+package compiler.exceptions;
+
 /**
  * The exception for syntax problems
  */

@@ -1,4 +1,9 @@
+package compiler;
+
+import compiler.exceptions.*;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
@@ -18,17 +23,51 @@ public class Compiler {
      * Compiles the code of a specified file
      *
      * @param filePath The path of the file containing the code
+     * @param options
      */
-    public void compile(String filePath, boolean vOptionActivated){
+    public void compile(String filePath, List<Option> options){
         try(FileReader fileReader = new FileReader(filePath)) {
             List<Symbol> tokens = lexicalAnalyse(fileReader);
             syntaxAnalyse(tokens);
-            printLeftMostDerivation(vOptionActivated);
-            //System.out.println(this.syntaxAnalyser.getParseTree().toLaTeX());
+            optionsHandler(options);
             // printTokens(tokens);
             // printSymbolTable(tokens);
         } catch (IOException | SyntaxException | LexicalException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void optionsHandler(List<Option> options) {
+        boolean vFlag = false;
+        for (Option option : options) {
+            switch (option.getLabel()) {
+                case "-v":
+                    printLeftMostDerivation(true);
+                    vFlag = true;
+                    break;
+                case "-wt":
+                    generateLatexFile(option.getArgument());
+                    break;
+            }
+        }
+
+        if (!vFlag) {
+            printLeftMostDerivation(false);
+        }
+    }
+
+    private void generateLatexFile(String outputFilename) {
+        File file = new File(outputFilename);
+        try {
+            if (!file.createNewFile()) {
+                throw new IOException();
+            }
+
+            try (FileWriter fileWriter = new FileWriter(outputFilename)) {
+                fileWriter.write(this.syntaxAnalyser.getParseTree().toLaTeX());
+            }
+        } catch (IOException e) {
+            //throw new IOException();
         }
     }
 
@@ -92,8 +131,8 @@ public class Compiler {
         }
     }
 
-    private void printLeftMostDerivation(boolean vOptionActivated) {
-        if (vOptionActivated) {
+    private void printLeftMostDerivation(boolean flag) {
+        if (flag) {
             String s = "<Program>";
             System.out.println(s);
             for (Integer integer : this.syntaxAnalyser.getLeftMostDerivation()) {

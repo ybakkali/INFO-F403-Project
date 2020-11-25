@@ -1,3 +1,7 @@
+package compiler;
+
+import compiler.exceptions.SyntaxException;
+
 import java.util.ArrayList;
 import java.util.List;
 

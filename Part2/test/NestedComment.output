@@ -1,4 +1,4 @@
-exceptions.SyntaxException: Closing without opening comment at line 17 column 15
+compiler.exceptions.SyntaxException: Closing without opening comment at line 17 column 15
 	at LexicalAnalyzer.nextToken(LexicalAnalyzer.java:739)
 	at Compiler.lexicalAnalyse(Compiler.java:46)
 	at Compiler.compile(Compiler.java:21)

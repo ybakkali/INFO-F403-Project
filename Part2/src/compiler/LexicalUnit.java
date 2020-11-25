@@ -1,3 +1,5 @@
+package compiler;
+
 public enum LexicalUnit{
     BEGINPROG,
     PROGNAME,

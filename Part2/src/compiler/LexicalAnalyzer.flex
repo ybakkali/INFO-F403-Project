@@ -1,3 +1,4 @@
+package compiler;
 %%// Options of the scanner
 
 %class LexicalAnalyzer	//Name
@@ -7,7 +8,7 @@
 %type Symbol  //Says that the return type is Symbol
 %function nextToken
 
-%yylexthrow LexicalException, SyntaxException
+%yylexthrow compiler.exceptions.LexicalException, compiler.exceptions.SyntaxException
 
 //Declare exclusive states
 %xstate YYINITIAL, COMMENT_STATE
@@ -20,10 +21,10 @@
 // Return value of the program
 %eofval{
     if(yystate() == COMMENT_STATE) {
-            throw new SyntaxException("Comment not closed");
-        } else {
-            return new Symbol(LexicalUnit.EOS, yyline, yycolumn);
-        }
+                throw new compiler.exceptions.SyntaxException("Comment not closed");
+            } else {
+                return new compiler.Symbol(LexicalUnit.EOS, yyline, yycolumn);
+            }
 %eofval}
 
 // Extended Regular Expressions
@@ -89,13 +90,13 @@ EndOfLine = \n|\r\n|\r
 
     // Comments
     {OpenLongComment}   {nestedCommentCounter++; yybegin(COMMENT_STATE);}
-    {CloseLongComment}  {throw new SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);}
+    {CloseLongComment}  {throw new compiler.exceptions.SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);}
 
     // Ignore Spacing Characters
     {Spacing}   {}
 
     // Syntax Error
-    [^]         {throw new LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
+    [^]         {throw new compiler.exceptions.LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
 }
 
 <COMMENT_STATE> {
