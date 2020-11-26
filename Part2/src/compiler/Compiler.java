@@ -67,17 +67,10 @@ public class Compiler {
      * @param outputFilename The output filename
      */
     private void generateLatexFile(String outputFilename) {
-        File file = new File(outputFilename);
-        try {
-            if (!file.createNewFile()) {
-                throw new IOException();
-            }
-
-            try (FileWriter fileWriter = new FileWriter(outputFilename)) {
-                fileWriter.write(this.parser.getParseTree().toLaTeX());
-            }
-        } catch (IOException e) {
-            //throw new IOException();
+        try (FileWriter fileWriter = new FileWriter(outputFilename)) {
+            fileWriter.write(this.parser.getParseTree().toLaTeX());
+        } catch (IOException ignored) {
+            System.err.println("The file cannot be created or written on !");
         }
     }
 

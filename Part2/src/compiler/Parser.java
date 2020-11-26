@@ -20,6 +20,7 @@ public class Parser {
      */
     public Parser(List<Symbol> tokens) {
         this.tokens = new Stack<>();
+        this.tokens.push(new Symbol(LexicalUnit.EOS));
         for (int i = tokens.size() - 1; i >= 0; i--) {
             this.tokens.push(tokens.get(i));
         }
@@ -78,7 +79,7 @@ public class Parser {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(1);
 
-        list.add(start());
+        list.add(multiEndLines());
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.BEGINPROG);
@@ -86,17 +87,18 @@ public class Parser {
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.PROGNAME);
 
-
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.ENDLINE);
-
 
         list.add(code());
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.ENDPROG);
 
-        list.add(end());
+        list.add(multiEndLines());
+
+        list.add(new ParseTree(getCurrentToken()));
+        match(LexicalUnit.EOS);
 
         return new ParseTree(new Symbol("Program"), list);
     }
@@ -105,20 +107,15 @@ public class Parser {
         List<ParseTree> list = new ArrayList<>();
 
         switch (getCurrentTokenType()) {
-            case ENDLINE:
-                leftMostDerivation.add(3);
-                list.add(new ParseTree(getCurrentToken()));
-                match(LexicalUnit.ENDLINE);
-
-                list.add(code());
-                break;
-
             case VARNAME:
             case IF:
             case WHILE:
             case PRINT:
             case READ:
+            case ENDLINE:
                 leftMostDerivation.add(2);
+                list.add(multiEndLines());
+
                 list.add(instruction());
 
                 list.add(new ParseTree(getCurrentToken()));
@@ -131,7 +128,7 @@ public class Parser {
             case ENDIF:
             case ELSE:
             case ENDWHILE:
-                leftMostDerivation.add(4);
+                leftMostDerivation.add(3);
                 return null;
 
             default:
@@ -145,26 +142,26 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case VARNAME:
-                leftMostDerivation.add(5);
+                leftMostDerivation.add(4);
                 list.add(assign());
                 break;
 
             case IF:
-                leftMostDerivation.add(6);
+                leftMostDerivation.add(5);
                 list.add(if_());
                 break;
             case WHILE:
-                leftMostDerivation.add(7);
+                leftMostDerivation.add(6);
                 list.add(while_());
                 break;
 
             case PRINT:
-                leftMostDerivation.add(8);
+                leftMostDerivation.add(7);
                 list.add(print());
                 break;
 
             case READ:
-                leftMostDerivation.add(9);
+                leftMostDerivation.add(8);
                 list.add(read());
                 break;
 
@@ -176,7 +173,7 @@ public class Parser {
 
     private ParseTree assign() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(10);
+        leftMostDerivation.add(9);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.VARNAME);
@@ -191,7 +188,7 @@ public class Parser {
 
     private ParseTree expr() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(11);
+        leftMostDerivation.add(10);
 
         list.add(prod());
 
@@ -205,7 +202,7 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case PLUS:
-                leftMostDerivation.add(12);
+                leftMostDerivation.add(11);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.PLUS);
 
@@ -216,7 +213,7 @@ public class Parser {
                 break;
 
             case MINUS:
-                leftMostDerivation.add(13);
+                leftMostDerivation.add(12);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.MINUS);
 
@@ -230,7 +227,7 @@ public class Parser {
             case RPAREN:
             case EQ:
             case GT:
-                leftMostDerivation.add(14);
+                leftMostDerivation.add(13);
                 return null;
 
             default:
@@ -241,7 +238,7 @@ public class Parser {
 
     private ParseTree prod() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(15);
+        leftMostDerivation.add(14);
 
         list.add(atom());
 
@@ -255,7 +252,7 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case TIMES:
-                leftMostDerivation.add(16);
+                leftMostDerivation.add(15);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.TIMES);
 
@@ -266,7 +263,7 @@ public class Parser {
                 break;
 
             case DIVIDE:
-                leftMostDerivation.add(17);
+                leftMostDerivation.add(16);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.DIVIDE);
 
@@ -275,13 +272,13 @@ public class Parser {
                 list.add(prodPrime());
 
                 break;
-            case ENDLINE: // Epsilon 18
+            case ENDLINE: // Epsilon
             case RPAREN:
             case MINUS:
             case PLUS:
             case EQ:
             case GT:
-                leftMostDerivation.add(18);
+                leftMostDerivation.add(17);
                 return null;
 
             default:
@@ -295,7 +292,7 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case MINUS:
-                leftMostDerivation.add(19);
+                leftMostDerivation.add(18);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.MINUS);
 
@@ -304,18 +301,18 @@ public class Parser {
                 break;
 
             case NUMBER:
-                leftMostDerivation.add(20);
+                leftMostDerivation.add(19);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.NUMBER);
                 break;
 
             case VARNAME:
-                leftMostDerivation.add(21);
+                leftMostDerivation.add(20);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.VARNAME);
                 break;
             case LPAREN:
-                leftMostDerivation.add(22);
+                leftMostDerivation.add(21);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.LPAREN);
 
@@ -334,7 +331,7 @@ public class Parser {
 
     private ParseTree if_() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(23);
+        leftMostDerivation.add(22);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.IF);
@@ -365,7 +362,7 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case ELSE:
-                leftMostDerivation.add(24);
+                leftMostDerivation.add(23);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.ELSE);
 
@@ -380,7 +377,7 @@ public class Parser {
                 break;
 
             case ENDIF:
-                leftMostDerivation.add(25);
+                leftMostDerivation.add(24);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.ENDIF);
                 break;
@@ -393,7 +390,7 @@ public class Parser {
 
     private ParseTree cond() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(26);
+        leftMostDerivation.add(25);
 
         list.add(expr());
 
@@ -409,13 +406,13 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case EQ:
-                leftMostDerivation.add(27);
+                leftMostDerivation.add(26);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.EQ);
                 break;
 
             case GT:
-                leftMostDerivation.add(28);
+                leftMostDerivation.add(27);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.GT);
                 break;
@@ -428,7 +425,7 @@ public class Parser {
 
     private ParseTree while_() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(29);
+        leftMostDerivation.add(28);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.WHILE);
@@ -457,7 +454,7 @@ public class Parser {
 
     private ParseTree print() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(30);
+        leftMostDerivation.add(29);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.PRINT);
@@ -476,7 +473,7 @@ public class Parser {
 
     private ParseTree read() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(31);
+        leftMostDerivation.add(30);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.READ);
@@ -493,49 +490,34 @@ public class Parser {
         return new ParseTree(new Symbol("Read"), list);
     }
 
-    private ParseTree start() throws SyntaxException {
+    private ParseTree multiEndLines() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
         switch (getCurrentTokenType()) {
             case ENDLINE:
-                leftMostDerivation.add(32);
+                leftMostDerivation.add(31);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.ENDLINE);
 
-                list.add(start());
+                list.add(multiEndLines());
 
                 break;
 
             case BEGINPROG: // epsilon
-                leftMostDerivation.add(33);
+            case EOS:
+            case IF:
+            case PRINT:
+            case WHILE:
+            case VARNAME:
+            case READ:
+                leftMostDerivation.add(32);
                 return null;
 
             default:
-                throw new SyntaxException("Error Start");
+                throw new SyntaxException("Error MultiEndLines");
         }
 
-        return new ParseTree(new Symbol("Start"), list);
-    }
-
-    private ParseTree end() throws SyntaxException {
-        List<ParseTree> list = new ArrayList<>();
-
-        if (this.tokens.isEmpty()) {
-            leftMostDerivation.add(35);
-            return null;
-        }
-
-        if (getCurrentTokenType() == LexicalUnit.ENDLINE) {
-            leftMostDerivation.add(34);
-            list.add(new ParseTree(getCurrentToken()));
-            match(LexicalUnit.ENDLINE);
-
-            list.add(end());
-        } else {
-            throw new SyntaxException("Error End");
-        }
-
-        return new ParseTree(new Symbol("End"), list);
+        return new ParseTree(new Symbol("MultiEndLines"), list);
     }
 
     public List<Integer> getLeftMostDerivation() {
@@ -552,55 +534,51 @@ public class Parser {
                 return "<Program>";
             case 2:
             case 3:
-            case 4:
                 return "<Code>";
+            case 4:
             case 5:
             case 6:
             case 7:
             case 8:
-            case 9:
                 return "<Instruction>";
-            case 10:
+            case 9:
                 return "<Assign>";
-            case 11:
+            case 10:
                 return "<Expr>";
+            case 11:
             case 12:
             case 13:
-            case 14:
                 return "<Expr'>";
-            case 15:
+            case 14:
                 return "<Prod>";
+            case 15:
             case 16:
             case 17:
-            case 18:
                 return "<Prod'>";
+            case 18:
             case 19:
             case 20:
             case 21:
-            case 22:
                 return "<Atom>";
-            case 23:
+            case 22:
                 return "<If>";
+            case 23:
             case 24:
-            case 25:
                 return "<IfTail>";
-            case 26:
+            case 25:
                 return "<Cond>";
+            case 26:
             case 27:
-            case 28:
                 return "<Comp>";
-            case 29:
+            case 28:
                 return "<While>";
-            case 30:
+            case 29:
                 return "<Print>";
-            case 31:
+            case 30:
                 return "<Read>";
+            case 31:
             case 32:
-            case 33:
-                return "<Start>";
-            case 34:
-            case 35:
-                return "<End>";
+                return "<MultiEndLines>";
         }
         return null;
     }
@@ -608,70 +586,68 @@ public class Parser {
     public String getRule(int ruleNumber) {
         switch (ruleNumber) {
             case 1:
-                return "<Start> BEGINPROG [ProgName] [EndLine] <Code> ENDPROG <End>";
+                return "<MultiEndLines> BEGINPROG [ProgName] [EndLine] <Code> ENDPROG <MultiEndLines> \\$";
             case 2:
-                return "<Instruction> [EndLine] <Code>";
+                return "<MultiEndLines> <Instruction> [EndLine] <Code>";
             case 3:
-                return "[EndLine] <Code>";
-            case 5:
-                return "<Assign>";
-            case 6:
-                return "<If>";
-            case 7:
-                return "<While>";
-            case 8:
-                return "<Print>";
-            case 9:
-                return "<Read>";
-            case 10:
-                return "[VarName]:=<Expr>";
-            case 11:
-                return "<Prod> <Expr'>";
-            case 12:
-                return "+<Prod> <Expr'>";
-            case 13:
-                return "-<Prod> <Expr'>";
-            case 15:
-                return "<Atom> <Prod'>";
-            case 16:
-                return "*<Atom> <Prod'>";
-            case 17:
-                return "/<Atom> <Prod'>";
-            case 19:
-                return "-<Atom>";
-            case 20:
-                return "[Number]";
-            case 21:
-                return "[VarName]";
-            case 22:
-                return "(<Expr>)";
-            case 23:
-                return "IF (<Cond>) THEN [EndLine] <Code> <IfTail>";
-            case 24:
-                return "ELSE [EndLine] <Code> ENDIF";
-            case 25:
-                return "ENDIF";
-            case 26:
-                return "<Expr> <Comp> <Expr>";
-            case 27:
-                return "=";
-            case 28:
-                return ">";
-            case 29:
-                return "WHILE (<Cond>) DO[EndLine] <Code>ENDWHILE";
-            case 30:
-                return "PRINT([VarName])";
-            case 31:
-                return "READ([VarName])";
-            case 32:
-                return "[EndLine] <Start>";
-            case 34:
-                return "[EndLine] <End>";
+                return "";
             case 4:
+                return "<Assign>";
+            case 5:
+                return "<If>";
+            case 6:
+                return "<While>";
+            case 7:
+                return "<Print>";
+            case 8:
+                return "<Read>";
+            case 9:
+                return "[VarName]:=<Expr>";
+            case 10:
+                return "<Prod> <Expr'>";
+            case 11:
+                return "+<Prod> <Expr'>";
+            case 12:
+                return "-<Prod> <Expr'>";
+            case 13:
+                return "";
             case 14:
+                return "<Atom> <Prod'>";
+            case 15:
+                return "*<Atom> <Prod'>";
+            case 16:
+                return "/<Atom> <Prod'>";
+            case 17:
+                return "";
             case 18:
-            case 33:
-            case 35:
+                return "-<Atom>";
+            case 19:
+                return "[Number]";
+            case 20:
+                return "[VarName]";
+            case 21:
+                return "(<Expr>)";
+            case 22:
+                return "IF (<Cond>) THEN [EndLine] <Code> <IfTail>";
+            case 23:
+                return "ELSE [EndLine] <Code> ENDIF";
+            case 24:
+                return "ENDIF";
+            case 25:
+                return "<Expr> <Comp> <Expr>";
+            case 26:
+                return "=";
+            case 27:
+                return ">";
+            case 28:
+                return "WHILE (<Cond>) DO[EndLine] <Code>ENDWHILE";
+            case 29:
+                return "PRINT([VarName])";
+            case 30:
+                return "READ([VarName])";
+            case 31:
+                return "[EndLine] <MultiEndLines>";
+            case 32:
                 return "";
         }
         return null;
