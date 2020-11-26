@@ -5,12 +5,21 @@ import compiler.exceptions.CommandLineException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is a parser that can parse a command line.
+ */
 public class CommandLineParser {
 
     String filePath;
     List<Option> options = new ArrayList<>();
 
-    public  CommandLineParser(String[] args) throws CommandLineException {
+    /**
+     * Parse the specified command line.
+     *
+     * @param args The arguments
+     * @throws CommandLineException When a problem is encountered
+     */
+    public CommandLineParser(String[] args) throws CommandLineException {
 
         if (args.length > 0) {
             int i = 0;
@@ -41,10 +50,20 @@ public class CommandLineParser {
         }
     }
 
+    /**
+     * Get the file path.
+     *
+     * @return The file path
+     */
     public String getFilePath() {
         return filePath;
     }
 
+    /**
+     * Get the options.
+     *
+     * @return The options
+     */
     public List<Option> getOptions() {
         return options;
     }

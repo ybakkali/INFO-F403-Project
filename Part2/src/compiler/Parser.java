@@ -6,24 +6,43 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class SyntaxAnalyser {
+/**
+ * This class is a parser that can parse Fortr-S code.
+ */
+public class Parser {
     private final Stack<Symbol> tokens;
     private List<Integer> leftMostDerivation;
     private ParseTree parseTree;
 
-    public SyntaxAnalyser(List<Symbol> tokens) {
+    /**
+     * Create a new parser.
+     * @param tokens the list of tokens of the code
+     */
+    public Parser(List<Symbol> tokens) {
         this.tokens = new Stack<>();
         for (int i = tokens.size() - 1; i >= 0; i--) {
             this.tokens.push(tokens.get(i));
         }
     }
 
-    public void analyse() throws SyntaxException {
+    /**
+     * Run the parsing process.
+     *
+     * @throws SyntaxException When a syntax problem is encountered
+     */
+    public void parse() throws SyntaxException {
         this.leftMostDerivation = new ArrayList<>();
 
         this.parseTree = program();
     }
 
+    /**
+     * Pop the head of the stack and verify that
+     * its type is the same as the specified one.
+     *
+     * @param expectedType The expected type
+     * @throws SyntaxException When a syntax problem is encountered
+     */
     private void match(LexicalUnit expectedType) throws SyntaxException {
         Symbol currentToken = this.tokens.pop();
         if (currentToken.getType() != expectedType) {
@@ -31,6 +50,12 @@ public class SyntaxAnalyser {
         }
     }
 
+    /**
+     * Return the head of the stack.
+     *
+     * @return The head of the stack
+     * @throws SyntaxException When a syntax problem is encountered
+     */
     private Symbol getCurrentToken() throws SyntaxException {
         if (!this.tokens.isEmpty())
             return this.tokens.peek();
@@ -39,6 +64,12 @@ public class SyntaxAnalyser {
         }
     }
 
+    /**
+     * Return the type of the head of the stack.
+     *
+     * @return The type of the head of the stack
+     * @throws SyntaxException When a syntax problem is encountered
+     */
     private LexicalUnit getCurrentTokenType() throws SyntaxException {
         return getCurrentToken().getType();
     }

@@ -1,14 +1,20 @@
 package compiler;
+
+import java.util.*;
+import java.io.IOException;
+import compiler.exceptions.*;
+
 %%// Options of the scanner
 
-%class LexicalAnalyzer	//Name
+%class Scanner	//Name
+%apiprivate     //Make the generated functions private
 %unicode		//Use unicode
 %line         	//Use line counter (yyline variable)
 %column       	//Use character counter by line (yycolumn variable)
 %type Symbol  //Says that the return type is Symbol
 %function nextToken
 
-%yylexthrow compiler.exceptions.LexicalException, compiler.exceptions.SyntaxException
+%yylexthrow LexicalException, SyntaxException
 
 //Declare exclusive states
 %xstate YYINITIAL, COMMENT_STATE
@@ -18,13 +24,36 @@ package compiler;
     private int nestedCommentCounter = 0;
 %}
 
+//Declare the scan method
+%{
+    /**
+     * Run the scanning process.
+     *
+     * @return The list of tokens that the code contains
+     * @throws LexicalException When a lexical problem is encountered
+     * @throws SyntaxException When a syntax problem is encountered
+     * @throws IOException When another problem is encountered
+     */
+    public List<Symbol> scan() throws LexicalException, SyntaxException, IOException {
+        List<Symbol> tokens = new ArrayList<>();
+        Symbol currentSymbol = nextToken();
+        while ((currentSymbol == null) || currentSymbol.getType() != LexicalUnit.EOS) {
+            if (currentSymbol != null) {
+                tokens.add(currentSymbol);
+            }
+            currentSymbol = nextToken();
+        }
+        return tokens;
+    }
+%}
+
 // Return value of the program
 %eofval{
     if(yystate() == COMMENT_STATE) {
-                throw new compiler.exceptions.SyntaxException("Comment not closed");
-            } else {
-                return new compiler.Symbol(LexicalUnit.EOS, yyline, yycolumn);
-            }
+        throw new SyntaxException("Comment not closed");
+    } else {
+        return new compiler.Symbol(LexicalUnit.EOS, yyline, yycolumn);
+    }
 %eofval}
 
 // Extended Regular Expressions
@@ -90,13 +119,13 @@ EndOfLine = \n|\r\n|\r
 
     // Comments
     {OpenLongComment}   {nestedCommentCounter++; yybegin(COMMENT_STATE);}
-    {CloseLongComment}  {throw new compiler.exceptions.SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);}
+    {CloseLongComment}  {throw new SyntaxException("Closing without opening comment at line " + yyline + " column " + yycolumn);}
 
     // Ignore Spacing Characters
     {Spacing}   {}
 
     // Syntax Error
-    [^]         {throw new compiler.exceptions.LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
+    [^]         {throw new LexicalException("Syntax error at line " + yyline + " column " + yycolumn);}
 }
 
 <COMMENT_STATE> {
