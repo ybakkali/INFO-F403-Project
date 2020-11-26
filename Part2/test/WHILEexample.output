@@ -1,0 +1,44 @@
+// Without -v option
+
+1 32 32 33 3 2 9 31 3 2 7 29 26 11 15 21 18 14 28 11 15 20 18 14 3 2 8 30 3 2 8 30 3 4 4 32 33.
+
+// With -v option
+
+<Program>
+1 -> <MultiEndLines> BEGINPROG [ProgName] [EndLine] <Code> ENDPROG <MultiEndLines> $
+32 -> [EndLine] <MultiEndLines> BEGINPROG [ProgName] [EndLine] <Code> ENDPROG <MultiEndLines> $
+32 -> [EndLine] [EndLine] <MultiEndLines> BEGINPROG [ProgName] [EndLine] <Code> ENDPROG <MultiEndLines> $
+33 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] <Code> ENDPROG <MultiEndLines> $
+3 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] <Code> ENDPROG <MultiEndLines> $
+2 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] <Instruction> [EndLine] <Code> ENDPROG <MultiEndLines> $
+9 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] <Read> [EndLine] <Code> ENDPROG <MultiEndLines> $
+31 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] <Code> ENDPROG <MultiEndLines> $
+3 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] <Code> ENDPROG <MultiEndLines> $
+2 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] <Instruction> [EndLine] <Code> ENDPROG <MultiEndLines> $
+7 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] <While> [EndLine] <Code> ENDPROG <MultiEndLines> $
+29 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE (<Cond>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+26 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE (<Expr> <Comp> <Expr>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+11 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE (<Prod> <Expr'> <Comp> <Expr>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+15 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE (<Atom> <Prod'> <Expr'> <Comp> <Expr>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+21 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName] <Prod'> <Expr'> <Comp> <Expr>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+18 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]  <Expr'> <Comp> <Expr>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+14 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   <Comp> <Expr>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+28 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > <Expr>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+11 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > <Prod> <Expr'>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+15 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > <Atom> <Prod'> <Expr'>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+20 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number] <Prod'> <Expr'>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+18 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  <Expr'>) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+14 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+3 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+2 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] <Instruction> [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+8 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] <Print> [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+30 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+3 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+2 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] <Instruction> [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+8 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] <Print> [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+30 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] PRINT([VarName]) [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+3 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] <Code>ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+4 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] ENDWHILE [EndLine] <Code> ENDPROG <MultiEndLines> $
+4 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] ENDWHILE [EndLine]  ENDPROG <MultiEndLines> $
+32 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] ENDWHILE [EndLine]  ENDPROG [EndLine] <MultiEndLines> $
+33 -> [EndLine] [EndLine]  BEGINPROG [ProgName] [EndLine] [EndLine] READ([VarName]) [EndLine] [EndLine] WHILE ([VarName]   > [Number]  ) DO[EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] PRINT([VarName]) [EndLine] [EndLine] ENDWHILE [EndLine]  ENDPROG [EndLine]  $
