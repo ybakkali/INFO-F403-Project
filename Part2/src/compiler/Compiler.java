@@ -33,7 +33,7 @@ public class Compiler {
             parser.parse();
             optionsHandler(options);
         } catch (IOException | SyntaxException | LexicalException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 
