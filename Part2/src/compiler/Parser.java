@@ -78,6 +78,8 @@ public class Parser {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(1);
 
+        list.add(start());
+
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.BEGINPROG);
 
@@ -93,6 +95,8 @@ public class Parser {
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.ENDPROG);
+
+        list.add(end());
 
         return new ParseTree(new Symbol("Program"), list);
     }
@@ -489,6 +493,51 @@ public class Parser {
         return new ParseTree(new Symbol("Read"), list);
     }
 
+    private ParseTree start() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+
+        switch (getCurrentTokenType()) {
+            case ENDLINE:
+                leftMostDerivation.add(32);
+                list.add(new ParseTree(getCurrentToken()));
+                match(LexicalUnit.ENDLINE);
+
+                list.add(start());
+
+                break;
+
+            case BEGINPROG: // epsilon
+                leftMostDerivation.add(33);
+                return null;
+
+            default:
+                throw new SyntaxException("Error Start");
+        }
+
+        return new ParseTree(new Symbol("Start"), list);
+    }
+
+    private ParseTree end() throws SyntaxException {
+        List<ParseTree> list = new ArrayList<>();
+
+        if (this.tokens.isEmpty()) {
+            leftMostDerivation.add(35);
+            return null;
+        }
+
+        if (getCurrentTokenType() == LexicalUnit.ENDLINE) {
+            leftMostDerivation.add(34);
+            list.add(new ParseTree(getCurrentToken()));
+            match(LexicalUnit.ENDLINE);
+
+            list.add(end());
+        } else {
+            throw new SyntaxException("Error End");
+        }
+
+        return new ParseTree(new Symbol("End"), list);
+    }
+
     public List<Integer> getLeftMostDerivation() {
         return leftMostDerivation;
     }
@@ -546,6 +595,12 @@ public class Parser {
                 return "<Print>";
             case 31:
                 return "<Read>";
+            case 32:
+            case 33:
+                return "<Start>";
+            case 34:
+            case 35:
+                return "<End>";
         }
         return null;
     }
@@ -553,7 +608,7 @@ public class Parser {
     public String getRule(int ruleNumber) {
         switch (ruleNumber) {
             case 1:
-                return "BEGINPROG [ProgName] [EndLine] <Code> ENDPROG";
+                return "<Start> BEGINPROG [ProgName] [EndLine] <Code> ENDPROG <End>";
             case 2:
                 return "<Instruction> [EndLine] <Code>";
             case 3:
@@ -603,14 +658,20 @@ public class Parser {
             case 28:
                 return ">";
             case 29:
-                return "WHILE (<Cond>) DO[EndLIne] <Code>ENDWHILE";
+                return "WHILE (<Cond>) DO[EndLine] <Code>ENDWHILE";
             case 30:
                 return "PRINT([VarName])";
             case 31:
                 return "READ([VarName])";
+            case 32:
+                return "[EndLine] <Start>";
+            case 34:
+                return "[EndLine] <End>";
             case 4:
             case 14:
             case 18:
+            case 33:
+            case 35:
                 return "";
         }
         return null;
