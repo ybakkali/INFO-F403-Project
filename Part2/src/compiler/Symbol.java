@@ -76,9 +76,14 @@ public class Symbol{
 		return "Non-terminal symbol";
 	}
 
-	public String toTexString() { // TODO
+	public String toTexString() {
 		if (isTerminal()) {
-			return this.type.toString();
+			if (this.type == LexicalUnit.VARNAME || this.type == LexicalUnit.NUMBER) {
+				return this.type.toString() + " : " + this.value;
+			}
+			else {
+				return this.type.toString();
+			}
 		}
 		else {
 			return "$<$" + this.value.toString() + "$>$";

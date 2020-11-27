@@ -2,12 +2,9 @@
 
 package compiler;
 
-import compiler.exceptions.LexicalException;
-import compiler.exceptions.SyntaxException;
-
+import java.util.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import compiler.exceptions.*;
 
 
 /**
