@@ -1,11 +1,14 @@
 package compiler;
 
-import compiler.exceptions.*;
-import java.io.File;
+import compiler.exceptions.LexicalException;
+import compiler.exceptions.SyntaxException;
+
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * This class is a compiler that can compile Fortr-S code.
@@ -93,7 +96,7 @@ public class Compiler {
                 String s = Objects.toString(integer);
                 joiner.add(s);
             }
-            System.out.println(joiner.toString() + ".");
+            System.out.println(joiner.toString());
         }
     }
 }

@@ -1,7 +1,7 @@
 package compiler;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A skeleton class to represent parse trees. The arity is not fixed: a node can
@@ -16,8 +16,8 @@ import java.util.ArrayList;
  */
 
 public class ParseTree {
-    private Symbol label; // The label of the root of the tree
-    private List<ParseTree> children; // Its children, which are trees themselves
+    private final Symbol label; // The label of the root of the tree
+    private final List<ParseTree> children; // Its children, which are trees themselves
 
     /**
      * Creates a singleton tree with only a root labeled by label.

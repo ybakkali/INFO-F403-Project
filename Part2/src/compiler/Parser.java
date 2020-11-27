@@ -91,6 +91,12 @@ public class Parser {
                 "\n\tUnexpected token : " + currentToken.getType().toString());
     }
 
+    /**
+     * The program variable producing rules
+     *
+     * @return the program variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree program() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(1);
@@ -119,6 +125,12 @@ public class Parser {
         return new ParseTree(new Symbol("Program"), list);
     }
 
+    /**
+     * The code variable producing rules
+     *
+     * @return the code variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree code() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
@@ -159,6 +171,12 @@ public class Parser {
         return new ParseTree(new Symbol("Code"), list);
     }
 
+    /**
+     * The instruction variable producing rules
+     *
+     * @return the instruction variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree instruction() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
@@ -193,6 +211,12 @@ public class Parser {
         return new ParseTree(new Symbol("Instruction"), list);
     }
 
+    /**
+     * The assign variable producing rules
+     *
+     * @return the assign variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree assign() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(10);
@@ -208,6 +232,12 @@ public class Parser {
         return new ParseTree(new Symbol("Assign"), list);
     }
 
+    /**
+     * The expr variable producing rules
+     *
+     * @return the expr variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree expr() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(11);
@@ -219,6 +249,12 @@ public class Parser {
         return new ParseTree(new Symbol("Expr"), list);
     }
 
+    /**
+     * The exprPrime variable producing rules
+     *
+     * @return the exprPrime variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree exprPrime() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
@@ -258,6 +294,12 @@ public class Parser {
         return new ParseTree(new Symbol("Expr'"), list);
     }
 
+    /**
+     * The prod variable producing rules
+     *
+     * @return the prod variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree prod() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(15);
@@ -269,6 +311,12 @@ public class Parser {
         return new ParseTree(new Symbol("Prod"), list);
     }
 
+    /**
+     * The prodPrime variable producing rules
+     *
+     * @return the prodPrime variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree prodPrime() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
@@ -309,6 +357,12 @@ public class Parser {
         return new ParseTree(new Symbol("Prod'"), list);
     }
 
+    /**
+     * The atom variable producing rules
+     *
+     * @return the atom variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree atom() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
@@ -351,6 +405,12 @@ public class Parser {
         return new ParseTree(new Symbol("Atom"), list);
     }
 
+    /**
+     * The if variable producing rules
+     *
+     * @return the if variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree if_() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(23);
@@ -379,6 +439,12 @@ public class Parser {
         return new ParseTree(new Symbol("If"), list);
     }
 
+    /**
+     * The ifTail variable producing rules
+     *
+     * @return the ifTail variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree ifTail() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
@@ -410,6 +476,12 @@ public class Parser {
         return new ParseTree(new Symbol("IfTail"), list);
     }
 
+    /**
+     * The cond variable producing rules
+     *
+     * @return the cond variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree cond() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(26);
@@ -423,6 +495,12 @@ public class Parser {
         return new ParseTree(new Symbol("Cond"), list);
     }
 
+    /**
+     * The comp variable producing rules
+     *
+     * @return the comp variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree comp() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
@@ -445,6 +523,12 @@ public class Parser {
         return new ParseTree(new Symbol("Comp"), list);
     }
 
+    /**
+     * The while variable producing rules
+     *
+     * @return the while variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree while_() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(29);
@@ -474,6 +558,12 @@ public class Parser {
         return new ParseTree(new Symbol("While"), list);
     }
 
+    /**
+     * The print variable producing rules
+     *
+     * @return the print variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree print() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(30);
@@ -493,6 +583,12 @@ public class Parser {
         return new ParseTree(new Symbol("Print"), list);
     }
 
+    /**
+     * The read variable producing rules
+     *
+     * @return the read variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree read() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
         leftMostDerivation.add(31);
@@ -512,6 +608,12 @@ public class Parser {
         return new ParseTree(new Symbol("Read"), list);
     }
 
+    /**
+     * The multiEndLines variable producing rules
+     *
+     * @return the multiEndLines variable parse tree
+     * @throws SyntaxException the syntax exception
+     */
     private ParseTree multiEndLines() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
 
@@ -537,14 +639,30 @@ public class Parser {
         return new ParseTree(new Symbol("MultiEndLines"), list);
     }
 
+    /**
+     * Getter for the rules list of the left most derivation
+     *
+     * @return the list of left most derivation rules
+     */
     public List<Integer> getLeftMostDerivation() {
         return leftMostDerivation;
     }
 
+    /**
+     * Getter for the syntax analyser parse tree
+     *
+     * @return syntax analyser parse tree
+     */
     public ParseTree getParseTree() {
         return parseTree;
     }
 
+    /**
+     * Getter for the grammar variables
+     *
+     * @param variableNumber variable number
+     * @return the variable label
+     */
     public String getVariable(int variableNumber) {
         switch (variableNumber) {
             case 1:
@@ -601,6 +719,12 @@ public class Parser {
         return null;
     }
 
+    /**
+     *  Getter for the producing of the left most derivation
+     *
+     * @param ruleNumber left most derivation rule number
+     * @return the left derivation producing
+     */
     public String getRule(int ruleNumber) {
         switch (ruleNumber) {
             case 1:
