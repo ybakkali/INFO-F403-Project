@@ -45,6 +45,10 @@ public class CommandLineParser {
         } else {
             throw new CommandLineException("1 argument required");
         }
+
+        if (this.filePath == null) {
+            throw new CommandLineException("The source file argument required");
+        }
     }
 
     /**

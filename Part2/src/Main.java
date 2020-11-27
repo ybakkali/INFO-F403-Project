@@ -11,15 +11,13 @@ public class Main {
    * @param args The path of the file containing the code to compile
    */
   public static void main(String[] args) {
-    CommandLineParser parser;
 
     try {
-      parser = new CommandLineParser(args);
+      CommandLineParser parser = new CommandLineParser(args);
+      Compiler compiler = new Compiler();
+      compiler.compile(parser.getFilePath(), parser.getOptions());
     } catch (CommandLineException e) {
-      e.printStackTrace();
-      return;
+      System.err.println(e);
     }
-    Compiler compiler = new Compiler();
-    compiler.compile(parser.getFilePath(), parser.getOptions());
   }
 }
