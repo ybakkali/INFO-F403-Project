@@ -24,11 +24,6 @@ public class CommandLineParser {
         if (args.length > 0) {
             int i = 0;
             while (i < args.length) {
-                if (args[0].charAt(0) == '-') {
-                    throw new CommandLineException("The first argument cannot be an option");
-                } else {
-                    this.filePath = args[0];
-                }
                 if (args[i].charAt(0) == '-') {
                     if (args[i].equals("-v")) {
                         this.options.add(new Option("-v"));
@@ -42,6 +37,8 @@ public class CommandLineParser {
                     } else {
                         throw new CommandLineException("Unrecognised option detected");
                     }
+                } else {
+                    this.filePath = args[i];
                 }
                 i++;
             }
