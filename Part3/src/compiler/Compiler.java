@@ -3,6 +3,7 @@ package compiler;
 import compiler.exceptions.LexicalException;
 import compiler.exceptions.SyntaxException;
 
+import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -34,9 +35,22 @@ public class Compiler {
             List<Symbol> tokens = scanner.scan();
             this.parser = new Parser(tokens);
             parser.parse();
-            optionsHandler(options);
+            // optionsHandler(options);
+            CodeGenerator codeGenerator = new CodeGenerator();
+            debug(codeGenerator.generate(parser.getParseTree()));
         } catch (IOException | SyntaxException | LexicalException e) {
             System.err.println(e.getMessage());
+        }
+    }
+
+    private void debug(String code) {
+        try {
+        BufferedWriter writer = new BufferedWriter(new FileWriter("debug.ll"));
+        writer.write(code);
+
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

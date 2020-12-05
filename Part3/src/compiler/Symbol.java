@@ -48,7 +48,7 @@ public class Symbol{
 	}
 	
 	public Object getValue(){
-		return this.value;
+		return this.value != null ? this.value : "null";
 	}
 	
 	public int getLine(){

@@ -1,5 +1,5 @@
 all:
-	jflex src/compiler/Scanner.flex
+	# jflex src/compiler/Scanner.flex
 	javac -d bin -cp src/ src/Main.java
 	jar cfe dist/part3.jar Main -C bin .
 
