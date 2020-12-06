@@ -5,5 +5,7 @@ all:
 
 testing: Force
 	java -jar dist/part3.jar test/Factorial.fs -wt test.tex -v
+	# llvm-as debug.ll -o=debug.bc
+	# lli debug.bc
 
 Force:
