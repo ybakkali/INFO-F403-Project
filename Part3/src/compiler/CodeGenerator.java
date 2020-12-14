@@ -1,5 +1,7 @@
 package compiler;
 
+import compiler.exceptions.SemanticException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +60,7 @@ public class CodeGenerator {
 
     }
 
-    public String generate(ParseTree parseTree) {
+    public String generate(ParseTree parseTree) throws SemanticException {
         this.variablesList = new ArrayList<>();
         this.basicBlocksList = new ArrayList<>();
         this.tempVariable = 1;
@@ -95,13 +97,13 @@ public class CodeGenerator {
         return basicBlock;
     }
 
-    private void handleProgram(ParseTree parseTree) {
+    private void handleProgram(ParseTree parseTree) throws SemanticException {
         StringBuilder basicBlock = getNewBasicBlock("entry");
         StringBuilder lastBasicBlock = handleCode(parseTree.getChildren().get(4), basicBlock);
         lastBasicBlock.append("\t\tret i32 0\n");
     }
 
-    private StringBuilder handleCode(ParseTree parseTree, StringBuilder currentBasicBlock) {
+    private StringBuilder handleCode(ParseTree parseTree, StringBuilder currentBasicBlock) throws SemanticException {
         if (parseTree == null) {
             return currentBasicBlock;
         } else if (parseTree.getChildren().get(0).getLabel().getType() == LexicalUnit.ENDLINE) {
@@ -112,7 +114,7 @@ public class CodeGenerator {
         }
     }
 
-    private StringBuilder handleInstruction(ParseTree parseTree, StringBuilder currentBasicBlock) {
+    private StringBuilder handleInstruction(ParseTree parseTree, StringBuilder currentBasicBlock) throws SemanticException {
         ParseTree child = parseTree.getChildren().get(0);
         switch ((String) child.getLabel().getValue()) {
             case "Assign": return handleAssign(child, currentBasicBlock);
@@ -124,20 +126,22 @@ public class CodeGenerator {
         }
     }
 
-    private StringBuilder handleAssign(ParseTree parseTree, StringBuilder currentBasicBlock) {
+    private StringBuilder handleAssign(ParseTree parseTree, StringBuilder currentBasicBlock) throws SemanticException {
+
+        String tempVariable = getNextTempVariable();
+        handleExpr(parseTree.getChildren().get(2), currentBasicBlock, tempVariable);
+
         String variable = (String) parseTree.getChildren().get(0).getLabel().getValue();
         if (!this.variablesList.contains(variable)) {
             this.variablesList.add(variable);
         }
-        String tempVariable = getNextTempVariable();
-        handleExpr(parseTree.getChildren().get(2), currentBasicBlock, tempVariable);
 
         currentBasicBlock.append("\t\tstore i32 %").append(tempVariable).append(" , i32 * %").append(variable).append("\n");
 
         return currentBasicBlock;
     }
 
-    private StringBuilder handleIf(ParseTree parseTree, StringBuilder currentBasicBlock) {
+    private StringBuilder handleIf(ParseTree parseTree, StringBuilder currentBasicBlock) throws SemanticException {
         String trueLabel = "true" + getNextTempVariable();
         StringBuilder trueBasicBlock = getNewBasicBlock(trueLabel);
         String falseLabel = "false" + getNextTempVariable();
@@ -159,10 +163,10 @@ public class CodeGenerator {
         }
         lastBasicBlock.append("\t\tbr label %").append(endLabel).append("\n");
 
-        return endBasicBlock; // TODO verify
+        return endBasicBlock;
     }
 
-    private StringBuilder handleWhile(ParseTree parseTree, StringBuilder currentBasicBlock) {
+    private StringBuilder handleWhile(ParseTree parseTree, StringBuilder currentBasicBlock) throws SemanticException {
         String condLabel = "cond" + getNextTempVariable();
         StringBuilder condBasicBlock = getNewBasicBlock(condLabel);
         String trueLabel = "true" + getNextTempVariable();
@@ -170,7 +174,7 @@ public class CodeGenerator {
         String endLabel = "end" + getNextTempVariable();
         StringBuilder endBasicBlock = getNewBasicBlock(endLabel);
 
-        currentBasicBlock.append("\t\t br label %").append(condLabel).append("\n");
+        currentBasicBlock.append("\t\tbr label %").append(condLabel).append("\n");
 
         handleCond(parseTree.getChildren().get(2), condBasicBlock, trueLabel, endLabel);
 
@@ -179,12 +183,17 @@ public class CodeGenerator {
         lastBasicBlock = handleCode(parseTree.getChildren().get(6), trueBasicBlock);
         lastBasicBlock.append("\t\tbr label %").append(condLabel).append("\n");
 
-        return endBasicBlock; // TODO verify
+        return endBasicBlock;
     }
 
-    private StringBuilder handlePrint(ParseTree parseTree, StringBuilder currentBasicBlock) {
-        /* TODO exception */
+    private StringBuilder handlePrint(ParseTree parseTree, StringBuilder currentBasicBlock) throws SemanticException {
         String variable = (String) parseTree.getChildren().get(2).getLabel().getValue();
+        if (!this.variablesList.contains(variable)) {
+            Symbol currentToken = parseTree.getChildren().get(2).getLabel();
+            throw new SemanticException("Semantic error at " +
+                    "line " + currentToken.getLine() + " column " + currentToken.getColumn() + " :\n" +
+                                        "\tVariable \"" + currentToken.getValue() + "\" used before assignment");
+        }
         String tempVariable = getNextTempVariable();
 
         currentBasicBlock.append("\t\t%").append(tempVariable).append(" = load i32 , i32* %").append(variable).append("\n");
@@ -206,7 +215,7 @@ public class CodeGenerator {
         return currentBasicBlock;
     }
 
-    private void handleCond(ParseTree parseTree, StringBuilder currentBasicBlock, String labelTrue, String labelFalse) {
+    private void handleCond(ParseTree parseTree, StringBuilder currentBasicBlock, String labelTrue, String labelFalse) throws SemanticException {
         List<ParseTree> children = parseTree.getChildren();
 
         String variableA = getNextTempVariable();
@@ -222,7 +231,7 @@ public class CodeGenerator {
         currentBasicBlock.append("\t\tbr i1 %").append(condVariable).append(" , label %").append(labelTrue).append(" , label %").append(labelFalse).append("\n");
     }
 
-    private void handleExpr(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) {
+    private void handleExpr(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) throws SemanticException {
         if (parseTree.getChildren().get(1) == null) {
             handleProd(parseTree.getChildren().get(0), currentBasicBlock, variableToStoreIn);
         } else {
@@ -235,7 +244,7 @@ public class CodeGenerator {
         }
     }
 
-    private void handleExprPrime(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) {
+    private void handleExprPrime(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) throws SemanticException {
         if (parseTree.getChildren().get(2) == null) {
             handleProd(parseTree.getChildren().get(1), currentBasicBlock, variableToStoreIn);
         } else {
@@ -248,7 +257,7 @@ public class CodeGenerator {
         }
     }
 
-    private void handleProd(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) {
+    private void handleProd(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) throws SemanticException {
         if (parseTree.getChildren().get(1) == null) {
             handleAtom(parseTree.getChildren().get(0), currentBasicBlock, variableToStoreIn);
         } else {
@@ -261,7 +270,7 @@ public class CodeGenerator {
         }
     }
 
-    private void handleProdPrime(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) {
+    private void handleProdPrime(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) throws SemanticException {
         if (parseTree.getChildren().get(2) == null) {
             handleAtom(parseTree.getChildren().get(1), currentBasicBlock, variableToStoreIn);
         } else {
@@ -274,7 +283,7 @@ public class CodeGenerator {
         }
     }
 
-    private void handleAtom(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) {
+    private void handleAtom(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) throws SemanticException {
         Symbol label = parseTree.getChildren().get(0).getLabel();
         switch (label.getType()) {
             case MINUS: // TODO LOL?
@@ -287,6 +296,11 @@ public class CodeGenerator {
                 currentBasicBlock.append("\t\t%").append(variableToStoreIn).append(" = add i32 0 , ").append(variable).append("\n");
                 break;
             case VARNAME:
+                if (!this.variablesList.contains((String) label.getValue())) {
+                    throw new SemanticException("Semantic error at " +
+                            "line " + label.getLine() + " column " + label.getColumn() + " :\n" +
+                            "\tVariable \"" + label.getValue() + "\" used before assignment");
+                }
                 currentBasicBlock.append("\t\t%").append(variableToStoreIn).append(" = load i32 , i32 * %").append(label.getValue()).append("\n");
                 break;
             case LPAREN:

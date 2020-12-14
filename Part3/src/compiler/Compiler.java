@@ -1,6 +1,7 @@
 package compiler;
 
 import compiler.exceptions.LexicalException;
+import compiler.exceptions.SemanticException;
 import compiler.exceptions.SyntaxException;
 
 import java.io.BufferedWriter;
@@ -38,7 +39,7 @@ public class Compiler {
             // optionsHandler(options);
             CodeGenerator codeGenerator = new CodeGenerator();
             debug(codeGenerator.generate(parser.getParseTree()));
-        } catch (IOException | SyntaxException | LexicalException e) {
+        } catch (IOException | SyntaxException | LexicalException | SemanticException e) {
             System.err.println(e.getMessage());
         }
     }
