@@ -227,7 +227,7 @@ public class CodeGenerator {
         String operator = (children.get(1).getLabel().getType() == LexicalUnit.EQ)? "eq" : "sgt";
         String condVariable = getNextTempVariable();
 
-        currentBasicBlock.append("\t\t%").append(condVariable).append(" = icmp ").append(operator).append(" i32 %").append(variableA).append(" , %").append(variableB).append("\n"); // .append(" i32 %a, %b\n");
+        currentBasicBlock.append("\t\t%").append(condVariable).append(" = icmp ").append(operator).append(" i32 %").append(variableA).append(" , %").append(variableB).append("\n");
         currentBasicBlock.append("\t\tbr i1 %").append(condVariable).append(" , label %").append(labelTrue).append(" , label %").append(labelFalse).append("\n");
     }
 
@@ -235,25 +235,25 @@ public class CodeGenerator {
         if (parseTree.getChildren().get(1) == null) {
             handleProd(parseTree.getChildren().get(0), currentBasicBlock, variableToStoreIn);
         } else {
-            String variableA = getNextTempVariable();
-            String variableB = getNextTempVariable();
-            handleProd(parseTree.getChildren().get(0), currentBasicBlock, variableA);
-            handleExprPrime(parseTree.getChildren().get(1), currentBasicBlock, variableB);
-            String operator = (parseTree.getChildren().get(1).getChildren().get(0).getLabel().getType() == LexicalUnit.PLUS) ? "add" : "sub";
-            currentBasicBlock.append("\t\t%").append(variableToStoreIn).append(" = ").append(operator).append(" i32 %").append(variableA).append(" , %").append(variableB).append("\n");
-        }
-    }
+            String lastVariable = getNextTempVariable();
+            handleProd(parseTree.getChildren().get(0), currentBasicBlock, lastVariable);
+            String currentVariable;
+            String resultVariable;
+            parseTree = parseTree.getChildren().get(1);
 
-    private void handleExprPrime(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) throws SemanticException {
-        if (parseTree.getChildren().get(2) == null) {
-            handleProd(parseTree.getChildren().get(1), currentBasicBlock, variableToStoreIn);
-        } else {
-            String variableA = getNextTempVariable();
-            String variableB = getNextTempVariable();
-            handleProd(parseTree.getChildren().get(1), currentBasicBlock, variableA);
-            handleExprPrime(parseTree.getChildren().get(2), currentBasicBlock, variableB);
-            String operator = (parseTree.getChildren().get(2).getChildren().get(0).getLabel().getType() == LexicalUnit.PLUS) ? "add" : "sub";
-            currentBasicBlock.append("\t\t%").append(variableToStoreIn).append(" = ").append(operator).append(" i32 %").append(variableA).append(" , %").append(variableB).append("\n");
+            while (parseTree != null) {
+                currentVariable = getNextTempVariable();
+                handleProd(parseTree.getChildren().get(1), currentBasicBlock, currentVariable);
+
+                resultVariable = getNextTempVariable();
+                String operator = (parseTree.getChildren().get(0).getLabel().getType() == LexicalUnit.PLUS) ? "add" : "sub";
+                currentBasicBlock.append("\t\t%").append(resultVariable).append(" = ").append(operator).append(" i32 %").append(lastVariable).append(" , %").append(currentVariable).append("\n");
+
+                lastVariable = resultVariable;
+
+                parseTree = parseTree.getChildren().get(2);
+            }
+            currentBasicBlock.append("\t\t%").append(variableToStoreIn).append(" = add i32 0 , %").append(lastVariable).append("\n");
         }
     }
 
@@ -261,25 +261,25 @@ public class CodeGenerator {
         if (parseTree.getChildren().get(1) == null) {
             handleAtom(parseTree.getChildren().get(0), currentBasicBlock, variableToStoreIn);
         } else {
-            String variableA = getNextTempVariable();
-            String variableB = getNextTempVariable();
-            handleAtom(parseTree.getChildren().get(0), currentBasicBlock, variableA);
-            handleProdPrime(parseTree.getChildren().get(1), currentBasicBlock, variableB);
-            String operator = (parseTree.getChildren().get(1).getChildren().get(0).getLabel().getType() == LexicalUnit.TIMES) ? "mul" : "sdiv";
-            currentBasicBlock.append("\t\t%").append(variableToStoreIn).append(" = ").append(operator).append(" i32 %").append(variableA).append(" , %").append(variableB).append("\n");
-        }
-    }
+            String lastVariable = getNextTempVariable();
+            handleAtom(parseTree.getChildren().get(0), currentBasicBlock, lastVariable);
+            String currentVariable;
+            String resultVariable;
+            parseTree = parseTree.getChildren().get(1);
 
-    private void handleProdPrime(ParseTree parseTree, StringBuilder currentBasicBlock, String variableToStoreIn) throws SemanticException {
-        if (parseTree.getChildren().get(2) == null) {
-            handleAtom(parseTree.getChildren().get(1), currentBasicBlock, variableToStoreIn);
-        } else {
-            String variableA = getNextTempVariable();
-            String variableB = getNextTempVariable();
-            handleAtom(parseTree.getChildren().get(1), currentBasicBlock, variableA);
-            handleProdPrime(parseTree.getChildren().get(2), currentBasicBlock, variableB);
-            String operator = (parseTree.getChildren().get(2).getChildren().get(0).getLabel().getType() == LexicalUnit.TIMES) ? "mul" : "sdiv";
-            currentBasicBlock.append("\t\t%").append(variableToStoreIn).append(" = ").append(operator).append(" i32 %").append(variableA).append(" , %").append(variableB).append("\n");
+            while (parseTree != null) {
+                currentVariable = getNextTempVariable();
+                handleAtom(parseTree.getChildren().get(1), currentBasicBlock, currentVariable);
+
+                resultVariable = getNextTempVariable();
+                String operator = (parseTree.getChildren().get(0).getLabel().getType() == LexicalUnit.TIMES) ? "mul" : "sdiv";
+                currentBasicBlock.append("\t\t%").append(resultVariable).append(" = ").append(operator).append(" i32 %").append(lastVariable).append(" , %").append(currentVariable).append("\n");
+
+                lastVariable = resultVariable;
+
+                parseTree = parseTree.getChildren().get(2);
+            }
+            currentBasicBlock.append("\t\t%").append(variableToStoreIn).append(" = add i32 0 , %").append(lastVariable).append("\n");
         }
     }
 
