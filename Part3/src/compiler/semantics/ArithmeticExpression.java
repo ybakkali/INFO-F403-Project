@@ -6,11 +6,19 @@ import compiler.ParseTree;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represents an arithmetic expression.
+ */
 public class ArithmeticExpression {
 
     List<Product> terms;
     List<LexicalUnit> operators;
 
+    /**
+     * Construct the arithmetic expression with the specified parse tree.
+     *
+     * @param parseTree The parse tree
+     */
     public ArithmeticExpression(ParseTree parseTree) {
         this.terms = new ArrayList<>();
         this.operators = new ArrayList<>();
@@ -25,10 +33,20 @@ public class ArithmeticExpression {
         }
     }
 
+    /**
+     * Return all the terms.
+     *
+     * @return The terms
+     */
     public List<Product> getTerms() {
         return terms;
     }
 
+    /**
+     * Return the operators.
+     *
+     * @return The operators
+     */
     public List<LexicalUnit> getOperators() {
         return operators;
     }

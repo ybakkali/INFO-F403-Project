@@ -6,11 +6,19 @@ import compiler.ParseTree;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * THis class represents a product.
+ */
 public class Product {
 
     List<Atom> factors;
     List<LexicalUnit> operators;
 
+    /**
+     * Construct the product with the specified parse tree.
+     *
+     * @param parseTree The parse tree
+     */
     public Product(ParseTree parseTree) {
         this.factors = new ArrayList<>();
         this.operators = new ArrayList<>();
@@ -25,10 +33,20 @@ public class Product {
         }
     }
 
+    /**
+     * Return all the factors.
+     *
+     * @return The factors
+     */
     public List<Atom> getFactors() {
         return factors;
     }
 
+    /**
+     * Return all the operators.
+     *
+     * @return The operators
+     */
     public List<LexicalUnit> getOperators() {
         return operators;
     }

@@ -189,10 +189,10 @@ public class CodeGenerator {
      */
     public BasicBlock handleAssign(Assign assign, BasicBlock currentBasicBlock) throws SemanticException {
         String tempVariable = handleExpression(assign.getArithmeticExpression(), currentBasicBlock);
-        currentBasicBlock.add("store i32 %" + tempVariable + " , i32 * %" + assign.getVariableName());
+        currentBasicBlock.add("store i32 %" + tempVariable + " , i32 * %" + assign.getVariable());
 
-        if (!this.variablesList.contains(assign.getVariableName())) {
-            this.variablesList.add(assign.getVariableName());
+        if (!this.variablesList.contains(assign.getVariable())) {
+            this.variablesList.add(assign.getVariable());
         }
 
         return currentBasicBlock;

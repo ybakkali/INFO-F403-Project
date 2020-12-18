@@ -6,10 +6,18 @@ import compiler.ParseTree;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The class represents a code.
+ */
 public class Code {
 
     List<Instruction> instructions;
 
+    /**
+     * Construct the code with the specified parse tree.
+     *
+     * @param parseTree The parse tree
+     */
     public Code(ParseTree parseTree) {
         this.instructions = new ArrayList<>();
 
@@ -30,6 +38,11 @@ public class Code {
         }
     }
 
+    /**
+     * Return all the instructions.
+     *
+     * @return The instructions
+     */
     public List<Instruction> getInstructions() {
         return instructions;
     }
