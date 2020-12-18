@@ -21,34 +21,30 @@ public class CommandLineParser {
      */
     public CommandLineParser(String[] args) throws CommandLineException {
 
-        if (args.length > 0) {
-            int i = 0;
-            while (i < args.length) {
-                if (args[i].charAt(0) == '-') {
-                    if (args[i].equals("-v")) {
-                        this.options.add(new Option("-v"));
-                    } else if (args[i].equals("-wt")) {
-                        if (i+1 < args.length && args[i+1].charAt(0) != '-') {
-                            options.add(new Option("-wt", args[i+1]));
-                            i++;
-                        } else {
-                            throw new CommandLineException("After -wt option an argument required");
-                        }
-                    } else {
-                        throw new CommandLineException("Unrecognised option detected");
-                    }
-                } else {
-                    this.filePath = args[i];
-                }
-                i++;
-            }
-        } else {
-            throw new CommandLineException("1 argument required");
-        }
+        if (args.length == 0) { throw new CommandLineException("1 argument required"); }
 
-        if (this.filePath == null) {
-            throw new CommandLineException("The source file argument required");
-        }
+        else if (args.length == 1) { this.filePath = args[0]; }
+
+        else if (args.length == 2) {
+            if (args[0].charAt(0) == '-') {
+                if (args[0].equals("-exec")) {
+                    this.options.add(new Option("-exec"));
+                    this.filePath = args[1];
+                }
+            } else { throw new CommandLineException("Unrecognised option detected"); }
+
+        } else if (args.length == 3) {
+            int index = (args[0].charAt(0) == '-') ? 0 : 1;
+            this.filePath = (index == 0) ? args[args.length - 1] : args[0];
+
+            if (args[index].equals("-o")) {
+                if (args[index + 1].charAt(0) != '-') {
+                    options.add(new Option("-o", args[index + 1]));
+                } else {
+                    throw new CommandLineException("After -o option an argument required");
+                }
+            }
+        } else { throw new CommandLineException("Unrecognised command line detected"); }
     }
 
     /**

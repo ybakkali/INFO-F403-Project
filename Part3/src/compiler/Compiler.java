@@ -37,22 +37,9 @@ public class Compiler {
             List<Symbol> tokens = scanner.scan();
             this.parser = new Parser(tokens);
             parser.parse();
-            // optionsHandler(options);
-            CodeGenerator codeGenerator = new CodeGenerator();
-            debug(codeGenerator.generate(new Program(parser.getParseTree())));
-        } catch (IOException | SyntaxException | LexicalException | SemanticException e) {
+            optionsHandler(options);
+        } catch (IOException | SyntaxException | LexicalException e) {
             System.err.println(e.getMessage());
-        }
-    }
-
-    private void debug(String code) {
-        try {
-        BufferedWriter writer = new BufferedWriter(new FileWriter("debug.ll"));
-        writer.write(code);
-
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -62,57 +49,56 @@ public class Compiler {
      * @param options The options
      */
     private void optionsHandler(List<Option> options) {
+
+        CodeGenerator codeGenerator = new CodeGenerator();
+        String llvmcode = null;
+        try {
+            llvmcode = codeGenerator.generate(new Program(parser.getParseTree()));
+        } catch (SemanticException e) {
+            e.printStackTrace();
+        }
+
         boolean vFlag = false;
         for (Option option : options) {
             switch (option.getLabel()) {
-                case "-v":
-                    printLeftMostDerivation(true);
+                case "-o":
+                    saveLLVMCode(llvmcode, option.getArgument());
                     vFlag = true;
                     break;
-                case "-wt":
-                    generateLatexFile(option.getArgument());
+                case "-exec":
+                    executeLLVMCode(llvmcode);
                     break;
             }
         }
 
         if (!vFlag) {
-            printLeftMostDerivation(false);
+            System.out.println(llvmcode);
         }
     }
 
     /**
-     * Generate a latex file containing the parse tree.
+     * Create a file containing the generated LLVM code.
      *
+     * @param llvmCode The LLVM code
      * @param outputFilename The output filename
      */
-    private void generateLatexFile(String outputFilename) {
-        try (FileWriter fileWriter = new FileWriter(outputFilename)) {
-            fileWriter.write(this.parser.getParseTree().toLaTeX());
-        } catch (IOException ignored) {
-            System.err.println("The file cannot be created or written on !");
+    private void saveLLVMCode(String llvmCode, String outputFilename) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilename));
+            writer.write(llvmCode);
+
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     /**
-     * Print the left most derivation.
+     * Execute the generated LLVM code
      *
-     * @param flag Indicate the verbose
+     * @param llvmCode The LLVM code
      */
-    private void printLeftMostDerivation(boolean flag) {
-        if (flag) {
-            String s = "<Program>";
-            System.out.println(s);
-            for (Integer integer : this.parser.getLeftMostDerivation()) {
-                s = s.replaceFirst(this.parser.getVariable(integer), this.parser.getRule(integer));
-                System.out.printf("%d -> %s%n", integer, s);
-            }
-        } else {
-            StringJoiner joiner = new StringJoiner(" ");
-            for (Integer integer : this.parser.getLeftMostDerivation()) {
-                String s = Objects.toString(integer);
-                joiner.add(s);
-            }
-            System.out.println(joiner.toString());
-        }
+    private void executeLLVMCode(String llvmCode) {
+
     }
 }
