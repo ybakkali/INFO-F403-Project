@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * THis class represents a product.
+ * This class represents a product.
  */
 public class Product {
 
-    List<Atom> factors;
-    List<LexicalUnit> operators;
+    final private List<Atom> factors;
+    final private List<LexicalUnit> operators;
 
     /**
      * Construct the product with the specified parse tree.

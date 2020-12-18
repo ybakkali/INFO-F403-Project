@@ -6,9 +6,9 @@ import compiler.ParseTree;
  * This class represents a condition.
  */
 public class Condition {
-    ArithmeticExpression leftMember;
-    ArithmeticExpression rightMember;
-    String operator;
+    final private ArithmeticExpression leftMember;
+    final private ArithmeticExpression rightMember;
+    final private String operator;
 
     /**
      * Construct the condition with the specified parse tree.

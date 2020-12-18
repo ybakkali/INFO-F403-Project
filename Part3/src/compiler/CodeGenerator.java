@@ -59,6 +59,8 @@ public class CodeGenerator {
     private List<String> variablesList;
     private List<BasicBlock> basicBlocksList;
 
+    private BasicBlock currentBasicBlock;
+
     private Integer tempVariableCounter;
     private Integer whileCounter;
     private Integer ifCounter;
@@ -102,6 +104,8 @@ public class CodeGenerator {
     private void reset() {
         this.variablesList = new ArrayList<>();
         this.basicBlocksList = new ArrayList<>();
+
+        this.currentBasicBlock = null;
 
         this.tempVariableCounter = 0;
         this.whileCounter = 0;
@@ -157,145 +161,123 @@ public class CodeGenerator {
      * @throws SemanticException When a semantic problem is encountered
      */
     public void handleProgram(Program program) throws SemanticException {
-        BasicBlock basicBlock = getNewBasicBlock("entry");
-
-        BasicBlock lastBasicBlock = handleCode(program.getCode(), basicBlock);
-        lastBasicBlock.add("ret i32 0");
+        this.currentBasicBlock = getNewBasicBlock("entry");
+        handleCode(program.getCode());
+        this.currentBasicBlock.add("ret i32 0");
     }
 
     /**
      * Handle the code generation of the code.
      *
      * @param code The code
-     * @param currentBasicBlock The current basic block
-     * @return The last basic block
      * @throws SemanticException When a semantic problem is encountered
      */
-    public BasicBlock handleCode(Code code, BasicBlock currentBasicBlock) throws SemanticException {
+    public void handleCode(Code code) throws SemanticException {
         for (Instruction instruction : code.getInstructions()) {
-            currentBasicBlock = instruction.dispatch(this, currentBasicBlock);
+            instruction.dispatch(this);
         }
-
-        return currentBasicBlock;
     }
 
     /**
      * Handle the code generation of the assign.
      *
      * @param assign The assign
-     * @param currentBasicBlock The current basic block
-     * @return The last basic block
      * @throws SemanticException When a semantic problem is encountered
      */
-    public BasicBlock handleAssign(Assign assign, BasicBlock currentBasicBlock) throws SemanticException {
-        String tempVariable = handleExpression(assign.getArithmeticExpression(), currentBasicBlock);
-        currentBasicBlock.add("store i32 %" + tempVariable + " , i32 * %" + assign.getVariable());
+    public void handleAssign(Assign assign) throws SemanticException {
+        String tempVariable = handleExpression(assign.getArithmeticExpression());
+        this.currentBasicBlock.add("store i32 %" + tempVariable + " , i32 * %" + assign.getVariable());
 
         if (!this.variablesList.contains(assign.getVariable())) {
             this.variablesList.add(assign.getVariable());
         }
-
-        return currentBasicBlock;
     }
 
     /**
      * Handle the code generation of the if.
      *
      * @param if_ The if
-     * @param currentBasicBlock The current basic block
-     * @return The last basic block
      * @throws SemanticException When a semantic problem is encountered
      */
-    public BasicBlock handleIf(If if_, BasicBlock currentBasicBlock) throws SemanticException {
+    public void handleIf(If if_) throws SemanticException {
         String n = getNewIf();
         String trueLabel = "if_" + n + "_true";
-        BasicBlock trueBasicBlock = getNewBasicBlock(trueLabel);
         String falseLabel = "if_" + n + "_false";
         String endLabel = "if_" + n + "_end";
 
 
-        handleCondition(if_.getCondition(), currentBasicBlock, trueLabel, falseLabel);
+        handleCondition(if_.getCondition(), trueLabel, falseLabel);
 
-        BasicBlock lastBasicBlock;
-        lastBasicBlock = handleCode(if_.getCodeTrue(), trueBasicBlock);
-        lastBasicBlock.add("br label %" + endLabel);
+        this.currentBasicBlock = getNewBasicBlock(trueLabel);
+        handleCode(if_.getCodeTrue());
+        this.currentBasicBlock.add("br label %" + endLabel);
 
-        BasicBlock falseBasicBlock = getNewBasicBlock(falseLabel);
-        lastBasicBlock = falseBasicBlock;
+        this.currentBasicBlock = getNewBasicBlock(falseLabel);
         if (if_.getCodeFalse() != null) {
-            lastBasicBlock = handleCode(if_.getCodeFalse(), falseBasicBlock);
+            handleCode(if_.getCodeFalse());
         }
-        lastBasicBlock.add("br label %" + endLabel);
+        this.currentBasicBlock.add("br label %" + endLabel);
 
-        return getNewBasicBlock(endLabel);
+        this.currentBasicBlock = getNewBasicBlock(endLabel);
     }
 
     /**
      * Handle the code generation of the while.
      *
      * @param while_ The while
-     * @param currentBasicBlock The current basic block
-     * @return The last basic block
      * @throws SemanticException When a semantic problem is encountered
      */
-    public BasicBlock handleWhile(While while_, BasicBlock currentBasicBlock) throws SemanticException {
+    public void handleWhile(While while_) throws SemanticException {
         String n = getNewWhile();
         String condLabel = "while_" + n + "_cond";
-        BasicBlock condBasicBlock = getNewBasicBlock(condLabel);
         String loopLabel = "while_" + n + "_loop";
-        BasicBlock loopBasicBlock = getNewBasicBlock(loopLabel);
         String endLabel = "while_" + n + "_end";
-        BasicBlock endBasicBlock = getNewBasicBlock(endLabel);
 
-        currentBasicBlock.add("br label %" + condLabel);
+        this.currentBasicBlock.add("br label %" + condLabel);
 
-        handleCondition(while_.getCondition(), condBasicBlock, loopLabel, endLabel);
+        this.currentBasicBlock = getNewBasicBlock(condLabel);
+        handleCondition(while_.getCondition(), loopLabel, endLabel);
 
-        BasicBlock lastBasicBlock = handleCode(while_.getCode(), loopBasicBlock);
-        lastBasicBlock.add("br label %" + condLabel);
+        this.currentBasicBlock = getNewBasicBlock(loopLabel);
+        handleCode(while_.getCode());
 
-        return endBasicBlock;
+        this.currentBasicBlock.add("br label %" + condLabel);
+
+        this.currentBasicBlock = getNewBasicBlock(endLabel);
     }
 
     /**
      * Handle the code generation of the print.
      *
      * @param print The print
-     * @param currentBasicBlock The current basic block
-     * @return The last basic block
      * @throws SemanticException When a semantic problem is encountered
      */
-    public BasicBlock handlePrint(Print print, BasicBlock currentBasicBlock) throws SemanticException {
+    public void handlePrint(Print print) throws SemanticException {
         String variableName = (String) print.getVariable().getValue();
         if (!this.variablesList.contains(variableName)) {
             throw new SemanticException("Semantic error at " +
                     "line " + print.getVariable().getLine() + " column " + print.getVariable().getColumn() + " :\n" +
                     "\tVariable \"" + print.getVariable().getValue() + "\" used before assignment");
         }
-        String tempVariable = getNewTempVariable();
 
-        currentBasicBlock.add("%" + tempVariable + " = load i32 , i32 * %" + variableName);
-        currentBasicBlock.add("call void @println(i32 %" + tempVariable + ")");
-        return currentBasicBlock;
+        String tempVariable = getNewTempVariable();
+        this.currentBasicBlock.add("%" + tempVariable + " = load i32 , i32 * %" + variableName);
+        this.currentBasicBlock.add("call void @println(i32 %" + tempVariable + ")");
     }
 
     /**
      * Handle the code generation of the read.
      *
      * @param read The read
-     * @param currentBasicBlock The current basic block
-     * @return The last basic block
      */
-    public BasicBlock handleRead(Read read, BasicBlock currentBasicBlock) {
+    public void handleRead(Read read) {
         if (!this.variablesList.contains(read.getVariable())) {
             this.variablesList.add(read.getVariable());
         }
 
         String tempVariable = getNewTempVariable();
-        currentBasicBlock.add("%" + tempVariable + " = call i32 @readInt()");
-        currentBasicBlock.add("store i32 %" + tempVariable + " , i32 * %" + read.getVariable());
-
-        return currentBasicBlock;
+        this.currentBasicBlock.add("%" + tempVariable + " = call i32 @readInt()");
+        this.currentBasicBlock.add("store i32 %" + tempVariable + " , i32 * %" + read.getVariable());
     }
 
 
@@ -303,19 +285,18 @@ public class CodeGenerator {
      * Handle the code generation of the condition.
      *
      * @param condition The condition
-     * @param currentBasicBlock The current basic block
      * @param trueLabel The label to jump to when the condition is true
      * @param falseLabel The label to jump to when the condition is false
      * @throws SemanticException When a semantic problem is encountered
      */
-    public void handleCondition(Condition condition, BasicBlock currentBasicBlock, String trueLabel, String falseLabel) throws SemanticException {
-        String variableA = handleExpression(condition.getLeftMember(), currentBasicBlock);
-        String variableB = handleExpression(condition.getRightMember(), currentBasicBlock);
+    public void handleCondition(Condition condition, String trueLabel, String falseLabel) throws SemanticException {
+        String variableA = handleExpression(condition.getLeftMember());
+        String variableB = handleExpression(condition.getRightMember());
 
         String operator = (condition.getOperator().equals("="))? "eq" : "sgt";
         String condVariable = getNewTempVariable();
-        currentBasicBlock.add("%" + condVariable + " = icmp " + operator + " i32 %" + variableA + " , %" + variableB);
-        currentBasicBlock.add("br i1 %" + condVariable + " , label %" + trueLabel + " , label %" + falseLabel);
+        this.currentBasicBlock.add("%" + condVariable + " = icmp " + operator + " i32 %" + variableA + " , %" + variableB);
+        this.currentBasicBlock.add("br i1 %" + condVariable + " , label %" + trueLabel + " , label %" + falseLabel);
 
     }
 
@@ -323,18 +304,17 @@ public class CodeGenerator {
      * Handle the code generation of the arithmetic expression.
      *
      * @param arithmeticExpression The arithmetic expression
-     * @param currentBasicBlock The current basic block
      * @return The variable where the result was stored
      * @throws SemanticException When a semantic problem is encountered
      */
-    public String handleExpression(ArithmeticExpression arithmeticExpression, BasicBlock currentBasicBlock) throws SemanticException {
-        String lastVariable = handleProduct(arithmeticExpression.getTerms().get(0), currentBasicBlock);
+    public String handleExpression(ArithmeticExpression arithmeticExpression) throws SemanticException {
+        String lastVariable = handleProduct(arithmeticExpression.getTerms().get(0));
 
         for (int i = 0; i < arithmeticExpression.getOperators().size(); i++) {
-            String tempVariable = handleProduct(arithmeticExpression.getTerms().get(i + 1), currentBasicBlock);
+            String tempVariable = handleProduct(arithmeticExpression.getTerms().get(i + 1));
             String operator = (arithmeticExpression.getOperators().get(i) == LexicalUnit.PLUS) ? "add" : "sub";
             String newVariable = getNewTempVariable();
-            currentBasicBlock.add("%" + newVariable + " = " + operator + " i32 %" + lastVariable + " , %" + tempVariable);
+            this.currentBasicBlock.add("%" + newVariable + " = " + operator + " i32 %" + lastVariable + " , %" + tempVariable);
             lastVariable = newVariable;
         }
 
@@ -345,18 +325,17 @@ public class CodeGenerator {
      * Handle the code generation of the product.
      *
      * @param product The product
-     * @param currentBasicBlock The current basic block
      * @return The variable where the result was stored
      * @throws SemanticException When a semantic problem is encountered
      */
-    public String handleProduct(Product product, BasicBlock currentBasicBlock) throws SemanticException {
-        String lastVariable = handleAtom(product.getFactors().get(0), currentBasicBlock);
+    public String handleProduct(Product product) throws SemanticException {
+        String lastVariable = handleAtom(product.getFactors().get(0));
 
         for (int i = 0; i < product.getOperators().size(); i++) {
-            String tempVariable = handleAtom(product.getFactors().get(i + 1), currentBasicBlock);
+            String tempVariable = handleAtom(product.getFactors().get(i + 1));
             String operator = (product.getOperators().get(i) == LexicalUnit.TIMES) ? "mul" : "sdiv";
             String newVariable = getNewTempVariable();
-            currentBasicBlock.add("%" + newVariable + " = " + operator + " i32 %" + lastVariable + " , %" + tempVariable);
+            this.currentBasicBlock.add("%" + newVariable + " = " + operator + " i32 %" + lastVariable + " , %" + tempVariable);
             lastVariable = newVariable;
         }
 
@@ -367,22 +346,21 @@ public class CodeGenerator {
      * Handle the code generation of the atom.
      *
      * @param atom The atom
-     * @param currentBasicBlock The current basic block
      * @return The variable where the result was stored
      * @throws SemanticException When a semantic problem is encountered
      */
-    public String handleAtom(Atom atom, BasicBlock currentBasicBlock) throws SemanticException {
+    public String handleAtom(Atom atom) throws SemanticException {
         String var = null;
         switch (atom.getType()) {
             case 1:
-                String tempVariable = handleAtom(atom.getAtom(), currentBasicBlock);
+                String tempVariable = handleAtom(atom.getAtom());
                 var = getNewTempVariable();
-                currentBasicBlock.add("%" + var + " = mul i32 %" + tempVariable + " , -1");
+                this.currentBasicBlock.add("%" + var + " = mul i32 %" + tempVariable + " , -1");
                 break;
 
             case 2:
                 var = getNewTempVariable();
-                currentBasicBlock.add("%" + var + " = add i32 0 , " + atom.getNumber());
+                this.currentBasicBlock.add("%" + var + " = add i32 0 , " + atom.getNumber());
                 break;
 
             case 3:
@@ -394,11 +372,11 @@ public class CodeGenerator {
                     "\tVariable \"" + label.getValue() + "\" used before assignment");
                 }
                 var = getNewTempVariable();
-                currentBasicBlock.add("%" + var + " = load i32 , i32 * %" + label.getValue());
+                this.currentBasicBlock.add("%" + var + " = load i32 , i32 * %" + label.getValue());
                 break;
 
             case 4:
-                var = handleExpression(atom.getExpr(), currentBasicBlock);
+                var = handleExpression(atom.getExpr());
                 break;
         }
         return var;

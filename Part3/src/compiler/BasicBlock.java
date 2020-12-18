@@ -7,8 +7,8 @@ import java.util.List;
  * This class represents a basic block of code.
  */
 public class BasicBlock {
-    String label;
-    List<String> lines;
+    final private String label;
+    final private List<String> lines;
 
     /**
      * Construct the basic block with the specified label.

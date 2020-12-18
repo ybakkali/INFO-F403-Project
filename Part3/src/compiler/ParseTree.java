@@ -77,7 +77,7 @@ public class ParseTree {
 
     /**
      * Writes the tree as a TikZ picture. A TikZ picture embeds TikZ code so that
-     * LaTeX undertands it.
+     * LaTeX understand it.
      */
     public String toTikZPicture() {
         return "\\begin{tikzpicture}[tree layout]\n\\" + toTikZ() + ";\n\\end{tikzpicture}";
@@ -102,7 +102,7 @@ public class ParseTree {
     }
 
     /**
-     * Writes the tree as a forest picture. Returns the tree in forest enviroment
+     * Writes the tree as a forest picture. Returns the tree in forest environment
      * using the latex code of the tree
      */
     public String toForestPicture() {

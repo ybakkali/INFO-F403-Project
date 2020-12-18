@@ -1,6 +1,5 @@
 package compiler.semantics;
 
-import compiler.BasicBlock;
 import compiler.CodeGenerator;
 import compiler.ParseTree;
 import compiler.exceptions.SemanticException;
@@ -9,8 +8,9 @@ import compiler.exceptions.SemanticException;
  * This class represents an assign instruction.
  */
 public class Assign implements Instruction {
-    String variable;
-    ArithmeticExpression arithmeticExpression;
+
+    final private String variable;
+    final private ArithmeticExpression arithmeticExpression;
 
     /**
      * Construct the assign instruction with the specified parse tree.
@@ -26,13 +26,11 @@ public class Assign implements Instruction {
      * Dispatch to the right function of the code generator.
      *
      * @param codeGenerator The code generator
-     * @param basicBlock The current basic block
-     * @return The last basic block
      * @throws SemanticException When a semantic problem is encountered
      */
     @Override
-    public BasicBlock dispatch(CodeGenerator codeGenerator, BasicBlock basicBlock) throws SemanticException {
-        return codeGenerator.handleAssign(this, basicBlock);
+    public void dispatch(CodeGenerator codeGenerator) throws SemanticException {
+        codeGenerator.handleAssign(this);
     }
 
     /**

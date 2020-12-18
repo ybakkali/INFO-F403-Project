@@ -63,7 +63,7 @@ public class Symbol{
 	public int hashCode(){
 		final String value	= this.value != null? this.value.toString() : "null";
 		final String type		= this.type  != null? this.type.toString()  : "null";
-		return new String(value+"_"+type).hashCode();
+		return (value + "_" + type).hashCode();
 	}
 	
 	@Override

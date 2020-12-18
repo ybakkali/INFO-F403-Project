@@ -7,7 +7,7 @@ import compiler.ParseTree;
  */
 public class Program {
 
-    Code code;
+    final private Code code;
 
     /**
      * Construct the program with the specified parse tree.

@@ -1,6 +1,5 @@
 package compiler.semantics;
 
-import compiler.BasicBlock;
 import compiler.CodeGenerator;
 import compiler.LexicalUnit;
 import compiler.ParseTree;
@@ -10,9 +9,9 @@ import compiler.exceptions.SemanticException;
  * This class represents an if instruction.
  */
 public class If implements Instruction {
-    Condition condition;
-    Code codeTrue;
-    Code codeFalse;
+    final private Condition condition;
+    final private Code codeTrue;
+    final private Code codeFalse;
 
     /**
      * Construct the if instruction with the specified parse tree.
@@ -35,13 +34,11 @@ public class If implements Instruction {
      * Dispatch to the right function of the code generator.
      *
      * @param codeGenerator The code generator
-     * @param basicBlock The current basic block
-     * @return The last basic block
      * @throws SemanticException When a semantic problem is encountered
      */
     @Override
-    public BasicBlock dispatch(CodeGenerator codeGenerator, BasicBlock basicBlock) throws SemanticException {
-        return codeGenerator.handleIf(this, basicBlock);
+    public void dispatch(CodeGenerator codeGenerator) throws SemanticException {
+        codeGenerator.handleIf(this);
     }
 
     /**

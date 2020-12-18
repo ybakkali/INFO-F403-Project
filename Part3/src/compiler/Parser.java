@@ -734,6 +734,9 @@ public class Parser {
             case 3:
                 return "[EndLine] <Code>";
             case 4:
+            case 33:
+            case 18:
+            case 14:
                 return "";
             case 5:
                 return "<Assign>";
@@ -753,16 +756,12 @@ public class Parser {
                 return "+<Prod> <Expr'>";
             case 13:
                 return "-<Prod> <Expr'>";
-            case 14:
-                return "";
             case 15:
                 return "<Atom> <Prod'>";
             case 16:
                 return "*<Atom> <Prod'>";
             case 17:
                 return "/<Atom> <Prod'>";
-            case 18:
-                return "";
             case 19:
                 return "-<Atom>";
             case 20:
@@ -791,8 +790,6 @@ public class Parser {
                 return "READ([VarName])";
             case 32:
                 return "[EndLine] <MultiEndLines>";
-            case 33:
-                return "";
         }
         return null;
     }

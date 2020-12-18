@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class Code {
 
-    List<Instruction> instructions;
+    final private List<Instruction> instructions;
 
     /**
      * Construct the code with the specified parse tree.

@@ -8,8 +8,8 @@ import compiler.Symbol;
  */
 public class Atom {
 
-    Object value;
-    int type;
+    private Object value;
+    private int type;
 
     /**
      * Construct the atom with the specified parse tree.

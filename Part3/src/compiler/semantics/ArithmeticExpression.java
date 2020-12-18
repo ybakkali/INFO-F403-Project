@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class ArithmeticExpression {
 
-    List<Product> terms;
-    List<LexicalUnit> operators;
+    final private List<Product> terms;
+    final private List<LexicalUnit> operators;
 
     /**
      * Construct the arithmetic expression with the specified parse tree.
