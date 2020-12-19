@@ -42,6 +42,8 @@ public class ParseTree {
 
     /**
      * Writes the tree as LaTeX code
+     *
+     * @return The tree latex code
      */
     public String toLaTexTree() {
         StringBuilder treeTeX = new StringBuilder();
@@ -57,8 +59,9 @@ public class ParseTree {
     }
 
     /**
-     * Writes the tree as TikZ code. TikZ is a language to specify drawings in LaTeX
-     * files.
+     * Writes the tree as TikZ code. TikZ is a language to specify drawings in LaTeX files.
+     *
+     * @return The tree TikZ code
      */
     public String toTikZ() {
         StringBuilder treeTikZ = new StringBuilder();
@@ -76,8 +79,9 @@ public class ParseTree {
     }
 
     /**
-     * Writes the tree as a TikZ picture. A TikZ picture embeds TikZ code so that
-     * LaTeX understand it.
+     * Writes the tree as a TikZ picture. A TikZ picture embeds TikZ code so that LaTeX understand it.
+     *
+     * @return The tree TikZ picture
      */
     public String toTikZPicture() {
         return "\\begin{tikzpicture}[tree layout]\n\\" + toTikZ() + ";\n\\end{tikzpicture}";
@@ -95,6 +99,8 @@ public class ParseTree {
      * <pre>
      * lualatex some-file.tex
      * </pre>
+     *
+     * @return The tree Lua code
      */
     public String toLaTeXLua() {
         return "\\RequirePackage{luatex85}\n\\documentclass{standalone}\n\n\\usepackage{tikz}\n\n\\usetikzlibrary{graphdrawing, graphdrawing.trees}\n\n\\begin{document}\n\n"
@@ -104,6 +110,8 @@ public class ParseTree {
     /**
      * Writes the tree as a forest picture. Returns the tree in forest environment
      * using the latex code of the tree
+     *
+     * @return The tree forest picture
      */
     public String toForestPicture() {
         return "\\begin{forest}for tree={rectangle, draw, l sep=20pt}" + toLaTexTree() + ";\n\\end{forest}";
@@ -118,6 +126,8 @@ public class ParseTree {
      * <pre>
      * pdflatex some-file.tex
      * </pre>
+     *
+     * @return The tree latex document
      */
     public String toLaTeX() {
         return "\\documentclass[border=5pt]{standalone}\n\n\\usepackage{tikz}\n\\usepackage{forest}\n\n\\begin{document}\n\n"

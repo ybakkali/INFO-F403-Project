@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class CommandLineParser {
 
-    private String filePath;
+    private final String filePath;
     final private List<Option> options = new ArrayList<>();
 
     /**
@@ -21,30 +21,40 @@ public class CommandLineParser {
      */
     public CommandLineParser(String[] args) throws CommandLineException {
 
-        if (args.length == 0) { throw new CommandLineException("1 argument required"); }
+        switch (args.length) {
+            case 1:
+                this.filePath = args[0];
+                break;
+            case 2:
+                int index = (args[0].charAt(0) == '-') ? 0 : 1;
+                this.filePath = (index == 0) ? args[args.length - 1] : args[0];
 
-        else if (args.length == 1) { this.filePath = args[0]; }
-
-        else if (args.length == 2) {
-            if (args[0].charAt(0) == '-') {
-                if (args[0].equals("-exec")) {
+                if (args[index].equals("-exec")) {
                     this.options.add(new Option("-exec"));
-                    this.filePath = args[1];
-                }
-            } else { throw new CommandLineException("Unrecognised option detected"); }
-
-        } else if (args.length == 3) {
-            int index = (args[0].charAt(0) == '-') ? 0 : 1;
-            this.filePath = (index == 0) ? args[args.length - 1] : args[0];
-
-            if (args[index].equals("-o")) {
-                if (args[index + 1].charAt(0) != '-') {
-                    options.add(new Option("-o", args[index + 1]));
                 } else {
-                    throw new CommandLineException("After -o option an argument required");
+                    throw new CommandLineException("Unrecognised option detected");
                 }
-            }
-        } else { throw new CommandLineException("Unrecognised command line detected"); }
+
+                break;
+
+            case 3:
+                int i = (args[0].charAt(0) == '-') ? 0 : 1;
+                this.filePath = (i == 0) ? args[args.length - 1] : args[0];
+
+                if (args[i].equals("-o")) {
+                    if (args[i + 1].charAt(0) != '-') {
+                        options.add(new Option("-o", args[i + 1]));
+                    } else {
+                        throw new CommandLineException("After -o option an argument required");
+                    }
+                } else {
+                    throw new CommandLineException("Unrecognised option detected");
+                }
+
+                break;
+            default:
+                throw new CommandLineException("Unrecognised command line detected");
+        }
     }
 
     /**

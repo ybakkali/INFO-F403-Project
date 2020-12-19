@@ -24,7 +24,7 @@ out: Force
 
 exec: Force
 	@echo Testing the -exec option :
-	java -jar dist/part3.jar -exec test/Factorial.fs
+	java -jar dist/part3.jar test/Factorial.fs -exec
 	@echo Testing completed
 	@echo
 
