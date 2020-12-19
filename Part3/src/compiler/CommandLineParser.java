@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class CommandLineParser {
 
-    String filePath;
-    List<Option> options = new ArrayList<>();
+    private String filePath;
+    final private List<Option> options = new ArrayList<>();
 
     /**
      * Parse the specified command line.

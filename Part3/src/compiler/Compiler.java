@@ -5,13 +5,8 @@ import compiler.exceptions.SemanticException;
 import compiler.exceptions.SyntaxException;
 import compiler.semantics.Program;
 
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.StringJoiner;
 
 /**
  * This class is a compiler that can compile Fortr-S code.
@@ -58,20 +53,21 @@ public class Compiler {
             e.printStackTrace();
         }
 
-        boolean vFlag = false;
+        boolean flag = false;
         for (Option option : options) {
             switch (option.getLabel()) {
                 case "-o":
                     saveLLVMCode(llvmcode, option.getArgument());
-                    vFlag = true;
+                    flag = true;
                     break;
                 case "-exec":
                     executeLLVMCode(llvmcode);
+                    flag = true;
                     break;
             }
         }
 
-        if (!vFlag) {
+        if (!flag) {
             System.out.println(llvmcode);
         }
     }
@@ -100,5 +96,18 @@ public class Compiler {
      */
     private void executeLLVMCode(String llvmCode) {
 
+        try {
+            File tempFile = File.createTempFile("llvmExecFile", ".ll");
+            tempFile.deleteOnExit();
+            saveLLVMCode(llvmCode, tempFile.getAbsolutePath());
+
+            Process process = new ProcessBuilder().inheritIO().command("lli", tempFile.getAbsolutePath()).start();
+            System.out.println("Start of the program");
+            process.waitFor();
+            System.out.println("End of the program");
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

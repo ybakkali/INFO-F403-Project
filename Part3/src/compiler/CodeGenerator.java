@@ -32,29 +32,29 @@ public class CodeGenerator {
             "\t\t%res   = alloca i32\n" +
             "\t\t%digit = alloca i32\n" +
             "\t\tstore i32 0, i32* %res\n" +
-            "\t\tbr label %read\n" +
+            "\t\tbr label %read\n\n" +
             "\tread:\t; read a digit\n" +
             "\t\t%0 = call i32 @getchar()\n" +
             "\t\t%1 = sub i32 %0, 48\n" +
             "\t\tstore i32 %1, i32* %digit\n" +
             "\t\t%2 = icmp ne i32 %0, 10\t; is the char entered '\\n'?\n" +
-            "\t\tbr i1 %2, label %check, label %exit\n" +
+            "\t\tbr i1 %2, label %check, label %exit\n\n" +
             "\tcheck:\t; is the char entered a number?\n" +
             "\t\t%3 = icmp sle i32 %1, 9\n" +
             "\t\t%4 = icmp sge i32 %1, 0\n" +
             "\t\t%5 = and i1 %3, %4\n" +
-            "\t\tbr i1 %5, label %save, label %exit\n" +
+            "\t\tbr i1 %5, label %save, label %exit\n\n" +
             "\tsave:\t; res<-res*10+digit\n" +
             "\t\t%6 = load i32, i32* %res\n" +
             "\t\t%7 = load i32, i32* %digit\n" +
             "\t\t%8 = mul i32 %6, 10\n" +
             "\t\t%9 = add i32 %8, %7\n" +
             "\t\tstore i32 %9, i32* %res\n" +
-            "\t\tbr label %read\n" +
+            "\t\tbr label %read\n\n" +
             "\texit:\t; return res\n" +
             "\t\t%10 = load i32, i32* %res\n" +
             "\t\tret i32 %10\n" +
-            "}\n";
+            "}\n\n";
 
     private List<String> variablesList;
     private List<BasicBlock> basicBlocksList;

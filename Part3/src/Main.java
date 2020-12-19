@@ -17,7 +17,7 @@ public class Main {
       Compiler compiler = new Compiler();
       compiler.compile(parser.getFilePath(), parser.getOptions());
     } catch (CommandLineException e) {
-      System.err.println(e);
+      e.printStackTrace();
     }
   }
 }
