@@ -185,7 +185,7 @@ public class CodeGenerator {
      * @throws SemanticException When a semantic problem is encountered
      */
     public void handleAssign(Assign assign) throws SemanticException {
-        String tempVariable = handleExpression(assign.getArithmeticExpression());
+        String tempVariable = handleArithmeticExpression(assign.getArithmeticExpression());
         this.currentBasicBlock.add("store i32 %" + tempVariable + " , i32 * %" + assign.getVariable());
 
         if (!this.variablesList.contains(assign.getVariable())) {
@@ -290,8 +290,8 @@ public class CodeGenerator {
      * @throws SemanticException When a semantic problem is encountered
      */
     public void handleCondition(Condition condition, String trueLabel, String falseLabel) throws SemanticException {
-        String variableA = handleExpression(condition.getLeftMember());
-        String variableB = handleExpression(condition.getRightMember());
+        String variableA = handleArithmeticExpression(condition.getLeftMember());
+        String variableB = handleArithmeticExpression(condition.getRightMember());
 
         String operator = (condition.getOperator().equals("="))? "eq" : "sgt";
         String condVariable = getNewTempVariable();
@@ -307,76 +307,65 @@ public class CodeGenerator {
      * @return The variable where the result was stored
      * @throws SemanticException When a semantic problem is encountered
      */
-    public String handleExpression(ArithmeticExpression arithmeticExpression) throws SemanticException {
-        String lastVariable = handleProduct(arithmeticExpression.getTerms().get(0));
-
-        for (int i = 0; i < arithmeticExpression.getOperators().size(); i++) {
-            String tempVariable = handleProduct(arithmeticExpression.getTerms().get(i + 1));
-            String operator = (arithmeticExpression.getOperators().get(i) == LexicalUnit.PLUS) ? "add" : "sub";
-            String newVariable = getNewTempVariable();
-            this.currentBasicBlock.add("%" + newVariable + " = " + operator + " i32 %" + lastVariable + " , %" + tempVariable);
-            lastVariable = newVariable;
-        }
-
-        return lastVariable;
+    public String handleArithmeticExpression(ArithmeticExpression arithmeticExpression) throws SemanticException {
+        return handleNode(arithmeticExpression.getRoot());
     }
 
     /**
-     * Handle the code generation of the product.
+     * Handle the code generation of the node of the specified binary tree.
      *
-     * @param product The product
+     * @param binaryTree The binary tree
      * @return The variable where the result was stored
      * @throws SemanticException When a semantic problem is encountered
      */
-    public String handleProduct(Product product) throws SemanticException {
-        String lastVariable = handleAtom(product.getFactors().get(0));
+    private String handleNode(BinaryTree<Symbol> binaryTree) throws SemanticException {
+        if (binaryTree.isLeaf()) {
+            return handleLeaf(binaryTree.getData());
+        } else {
+            String leftVariable = handleNode(binaryTree.getLeftChild());
+            String rightVariable = handleNode(binaryTree.getRightChild());
+            String operator = "add";
+            String result = getNewTempVariable();
 
-        for (int i = 0; i < product.getOperators().size(); i++) {
-            String tempVariable = handleAtom(product.getFactors().get(i + 1));
-            String operator = (product.getOperators().get(i) == LexicalUnit.TIMES) ? "mul" : "sdiv";
-            String newVariable = getNewTempVariable();
-            this.currentBasicBlock.add("%" + newVariable + " = " + operator + " i32 %" + lastVariable + " , %" + tempVariable);
-            lastVariable = newVariable;
+            switch (binaryTree.getData().getType()) {
+                case PLUS:
+                    operator = "add";
+                    break;
+                case MINUS:
+                    operator = "sub";
+                    break;
+                case TIMES:
+                    operator = "mul";
+                    break;
+                case DIVIDE:
+                    operator = "sdiv";
+                    break;
+            }
+            this.currentBasicBlock.add("%" + result + " = " + operator + " i32 %" + leftVariable + " , %" + rightVariable);
+            return result;
         }
-
-        return lastVariable;
     }
 
     /**
      * Handle the code generation of the atom.
      *
-     * @param atom The atom
      * @return The variable where the result was stored
      * @throws SemanticException When a semantic problem is encountered
      */
-    public String handleAtom(Atom atom) throws SemanticException {
-        String var = null;
+    private String handleLeaf(Symbol atom) throws SemanticException {
+        String var = getNewTempVariable();
         switch (atom.getType()) {
-            case 1:
-                String tempVariable = handleAtom(atom.getAtom());
-                var = getNewTempVariable();
-                this.currentBasicBlock.add("%" + var + " = mul i32 %" + tempVariable + " , -1");
+            case NUMBER:
+                this.currentBasicBlock.add("%" + var + " = add i32 0, " + atom.getValue());
                 break;
-
-            case 2:
-                var = getNewTempVariable();
-                this.currentBasicBlock.add("%" + var + " = add i32 0 , " + atom.getNumber());
-                break;
-
-            case 3:
-                Symbol label = atom.getVariable();
-                String variableName = (String) label.getValue();
+            case VARNAME:
+                String variableName = (String) atom.getValue();
                 if (!this.variablesList.contains(variableName)) {
                     throw new SemanticException("Semantic error at " +
-                    "line " + label.getLine() + " column " + label.getColumn() + " :\n" +
-                    "\tVariable \"" + label.getValue() + "\" used before assignment");
+                            "line " + atom.getLine() + " column " + atom.getColumn() + " :\n" +
+                            "\tVariable \"" + atom.getValue() + "\" used before assignment");
                 }
-                var = getNewTempVariable();
-                this.currentBasicBlock.add("%" + var + " = load i32 , i32 * %" + label.getValue());
-                break;
-
-            case 4:
-                var = handleExpression(atom.getExpr());
+                this.currentBasicBlock.add("%" + var + " = load i32 , i32 * %" + variableName);
                 break;
         }
         return var;

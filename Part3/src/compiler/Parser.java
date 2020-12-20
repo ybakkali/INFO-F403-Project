@@ -11,7 +11,6 @@ import java.util.Stack;
  */
 public class Parser {
     private final Stack<Symbol> tokens;
-    private List<Integer> leftMostDerivation;
     private ParseTree parseTree;
 
     /**
@@ -32,8 +31,6 @@ public class Parser {
      * @throws SyntaxException When a syntax problem is encountered
      */
     public void parse() throws SyntaxException {
-        this.leftMostDerivation = new ArrayList<>();
-
         this.parseTree = program();
     }
 
@@ -99,7 +96,6 @@ public class Parser {
      */
     private ParseTree program() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(1);
 
         list.add(multiEndLines());
 
@@ -136,7 +132,6 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case ENDLINE:
-                leftMostDerivation.add(3);
 
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.ENDLINE);
@@ -149,7 +144,6 @@ public class Parser {
             case WHILE:
             case PRINT:
             case READ:
-                leftMostDerivation.add(2);
                 list.add(instruction());
 
                 list.add(new ParseTree(getCurrentToken()));
@@ -162,7 +156,6 @@ public class Parser {
             case ENDIF:
             case ELSE:
             case ENDWHILE:
-                leftMostDerivation.add(4);
                 return null;
 
             default:
@@ -182,26 +175,21 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case VARNAME:
-                leftMostDerivation.add(5);
                 list.add(assign());
                 break;
 
             case IF:
-                leftMostDerivation.add(6);
                 list.add(if_());
                 break;
             case WHILE:
-                leftMostDerivation.add(7);
                 list.add(while_());
                 break;
 
             case PRINT:
-                leftMostDerivation.add(8);
                 list.add(print());
                 break;
 
             case READ:
-                leftMostDerivation.add(9);
                 list.add(read());
                 break;
 
@@ -219,7 +207,6 @@ public class Parser {
      */
     private ParseTree assign() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(10);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.VARNAME);
@@ -240,7 +227,6 @@ public class Parser {
      */
     private ParseTree expr() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(11);
 
         list.add(prod());
 
@@ -260,7 +246,6 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case PLUS:
-                leftMostDerivation.add(12);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.PLUS);
 
@@ -271,7 +256,6 @@ public class Parser {
                 break;
 
             case MINUS:
-                leftMostDerivation.add(13);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.MINUS);
 
@@ -285,7 +269,6 @@ public class Parser {
             case RPAREN:
             case EQ:
             case GT:
-                leftMostDerivation.add(14);
                 return null;
 
             default:
@@ -302,7 +285,6 @@ public class Parser {
      */
     private ParseTree prod() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(15);
 
         list.add(atom());
 
@@ -322,7 +304,6 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case TIMES:
-                leftMostDerivation.add(16);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.TIMES);
 
@@ -333,7 +314,6 @@ public class Parser {
                 break;
 
             case DIVIDE:
-                leftMostDerivation.add(17);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.DIVIDE);
 
@@ -348,7 +328,6 @@ public class Parser {
             case PLUS:
             case EQ:
             case GT:
-                leftMostDerivation.add(18);
                 return null;
 
             default:
@@ -368,7 +347,6 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case MINUS:
-                leftMostDerivation.add(19);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.MINUS);
 
@@ -377,18 +355,15 @@ public class Parser {
                 break;
 
             case NUMBER:
-                leftMostDerivation.add(20);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.NUMBER);
                 break;
 
             case VARNAME:
-                leftMostDerivation.add(21);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.VARNAME);
                 break;
             case LPAREN:
-                leftMostDerivation.add(22);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.LPAREN);
 
@@ -413,7 +388,6 @@ public class Parser {
      */
     private ParseTree if_() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(23);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.IF);
@@ -450,7 +424,6 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case ELSE:
-                leftMostDerivation.add(24);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.ELSE);
 
@@ -465,7 +438,6 @@ public class Parser {
                 break;
 
             case ENDIF:
-                leftMostDerivation.add(25);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.ENDIF);
                 break;
@@ -484,7 +456,6 @@ public class Parser {
      */
     private ParseTree cond() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(26);
 
         list.add(expr());
 
@@ -506,13 +477,11 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case EQ:
-                leftMostDerivation.add(27);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.EQ);
                 break;
 
             case GT:
-                leftMostDerivation.add(28);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.GT);
                 break;
@@ -531,7 +500,6 @@ public class Parser {
      */
     private ParseTree while_() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(29);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.WHILE);
@@ -566,7 +534,6 @@ public class Parser {
      */
     private ParseTree print() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(30);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.PRINT);
@@ -591,7 +558,6 @@ public class Parser {
      */
     private ParseTree read() throws SyntaxException {
         List<ParseTree> list = new ArrayList<>();
-        leftMostDerivation.add(31);
 
         list.add(new ParseTree(getCurrentToken()));
         match(LexicalUnit.READ);
@@ -619,7 +585,6 @@ public class Parser {
 
         switch (getCurrentTokenType()) {
             case ENDLINE:
-                leftMostDerivation.add(32);
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.ENDLINE);
 
@@ -629,7 +594,6 @@ public class Parser {
 
             case BEGINPROG: // epsilon
             case EOS:
-                leftMostDerivation.add(33);
                 return null;
 
             default:
