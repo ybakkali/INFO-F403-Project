@@ -1,2 +1,551 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{adjustbox}
+\usepackage{pdflscape}
+\usepackage{hhline}
+\usepackage{color}
+\usepackage{tikz}
+\usepackage{forest}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{float}
+\usepackage{diagbox}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{indentfirst}
 
+
+\geometry{top=100px, bottom=100px, left=75px, right=75px}
+
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+
+
+        \Huge
+        \textbf{Introduction to language theory and compiling}
+        \vspace{0.25cm}
+
+        \LARGE
+        \textbf{INFO-F-403}
+
+        \vspace{0.25cm}
+        \LARGE
+        \text{Project : Part 3}
+
+        \vspace{0.25cm}
+        \textit{18 December 2020}
+
+        \vspace{3cm}
+           \Large
+        \textbf{BAKKALI Yahya : 000445166 \\}
+        \textbf{HAUWAERT Maxime : 000461714 \\}
+
+
+        \vspace{2cm}
+
+        \textsc{Université Libre de Bruxelles (ULB)}
+
+
+    \end{center}
+\end{titlepage}
+\setcounter{secnumdepth}{4}
+\titleformat{\paragraph}
+{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\setcounter{tocdepth}{4}
+\tableofcontents
+\newpage
+\section{Introduction}
+The objective of this project is to design a compiler for a new language Fortr-S. The first and second components of a compiler, the lexical analyser and the syntax analyser, have already been implemented in the first and second part of this project. In this third and last part, the semantic analyser and the code generator, will be implemented.
+
+\section{Description}
+
+\subsection{Semantic analyser}
+It analyses what the code means in order to prepare its translation. The semantic analysis consists of verifying three different aspects.  
+\begin{itemize}
+    \item \textsc{Visibility and scoping} : Verification here includes ensuring that all variables declared in one scope cannot be used elsewhere. Similarly, it must be ensured that the same variable name can coexist in different scopes and other similar things.
+    \item \textsc{Type control} : In general, the function return and the variable have a type. Thus, when assigning a variable, for example, the value to be assigned must be checked to ensure that it has the same type as the variable or that a conversion has been explicitly made or must be made when necessary.
+    \item \textsc{Control flow} : It basically verifies the order in which the instructions of the program will be executed.
+\end{itemize}
+
+\subsection{Abstract syntax tree}
+It is a derived version of the parse tree. It is meant to delete useless nodes of the parse tree to keep only the useful elements for analysing the structure of the program, these useless nodes were useful only to check whether the input was coherent with the grammar or not.
+
+\subsection{Code generator}
+It converts a certain representation of the code of a program into a code executable by a computer. Generally, a code generator takes an abstract syntax tree as input and converts it into a code in an intermediate language. This can be useful to write one compiler for different architectures as only the intermediate language has to adapt itself for the targeted architecture.
+
+
+\subsection{Basic block}
+A basic block contains a list of instructions that execute sequentially. It has no branch in except at the beginning and no branch out except at the end. It is useful in the analysis process, where the code must be divided into multiple basic blocks. Each basic block corresponds to a node in a control flow graph.
+
+\section{Bonus}
+In this part of the project, several features can be added. It has been decided that one of them will be implemented. The chosen functionality consists of adding logical operators and adding options to run the program with.
+
+\subsection{Logical operators}
+The added operators will be the following ones:
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Operator} & \textbf{Description}\\
+\hline\hline
+$<$ & less than  \\
+\hline
+$<=$ & less than or equal to  \\
+\hline
+$>=$ & greater than or equal to  \\
+\hline
+!= & not equal to  \\
+\hline
+\end{tabular}
+\end{center}
+
+To do this, some lexical and syntactical changes should be made. First, the corresponding tokens of the operators will be added for them to be recognized by the deterministic automata. Then some modifications will be done to the $<$Comp$>$ rules.\\
+
+The starting grammar for the rule $<$Comp$>$.
+
+\begin{center}
+\begin{tabular}{|m{2cm} m{0.5cm} m{4cm}|} 
+\hline
+$<$Comp$>$ & $\to$ & $=$\\
+& $\to$ & $>$\\
+\hline
+\end{tabular}
+\end{center}
+
+The modified grammar for the rule $<$Comp$>$.
+
+\begin{center}
+\begin{tabular}{|m{2cm} m{0.5cm} m{4cm}|} 
+\hline
+$<$Comp$>$ & $\to$ & $=$\\
+& $\to$ & $!=$\\
+& $\to$ & $>$\\
+& $\to$ & $>=$\\
+& $\to$ & $<$\\
+& $\to$ & $<=$\\
+\hline
+\end{tabular}
+\end{center}
+
+These modifications imply that the first and follow should be recomputed in order to keep the integrity of the parser. The first and follow that had to change :
+
+\begin{center}
+\begin{tabular}{|m{3cm}|m{5cm}|m{7cm}|} 
+\hline
+
+Symbol & First & Follow \\
+\hline\hline
+$<$Expr$>$ & [VarName], [Number], -, ( & [EndLine], =, $>$, ) \\
+\hline
+$<$Expr'$>$ & +, -, $\epsilon$ & [EndLine], =, $>$, ) \\
+\hline
+$<$Prod$>$ & [VarName], [Number], -, ( & [EndLine], +, -, =, $>$, ) \\
+\hline
+$<$Prod'$>$ & *, /, $\epsilon$ & [EndLine], +, -, =, $>$, ) \\
+\hline
+$<$Atom$>$ & [VarName], [Number], -, ( & [EndLine], +, -, *, /, =, $>$, ) \\
+\hline
+$<$Comp$>$ & =, $>$ & [VarName], [Number], -, ( \\
+\hline
+
+\end{tabular}
+\end{center}
+
+The result after all the computations :
+
+\begin{center}
+\begin{tabular}{|m{3cm}|m{5cm}|m{7cm}|} 
+\hline
+
+Symbol & First & Follow \\
+\hline\hline
+$<$Expr$>$ & [VarName], [Number], -, ( & [EndLine], =, !=, $>$, $>=$, $<$, $<=$, ) \\
+\hline
+$<$Expr'$>$ & +, -, $\epsilon$ & [EndLine], =, !=, $>$, $>=$, $<$, $<=$, ) \\
+\hline
+$<$Prod$>$ & [VarName], [Number], -, ( & [EndLine], +, -, =, !=, $>$, $>=$, $<$, $<=$, ) \\
+\hline
+$<$Prod'$>$ & *, /, $\epsilon$ & [EndLine], +, -, =, !=, $>$, $>=$, $<$, $<=$, ) \\
+\hline
+$<$Atom$>$ & [VarName], [Number], -, ( & [EndLine], +, -, *, /, =, !=, $>$, $>=$, $<$, $<=$, ) \\
+\hline
+$<$Comp$>$ & =, !=, $>$, $>=$, $<$, $<=$ & [VarName], [Number], -, ( \\
+\hline
+
+\end{tabular}
+\end{center}
+
+
+\subsection{Options}
+\subsubsection{-o}
+The \texttt{o} option allows the users to save their program generated by the code generator instead of printing it on the terminal. The generating code can be run through \texttt{LLVM IR} by executing it with the \texttt{lli} command.
+
+\subsubsection{-exec}
+The \texttt{exec} option allows the users to directly test the program through java. In order to easily implement it, it has been decided to create a temporary file using the \texttt{File.createTempFile} function. Then the program executes the \texttt{lli} command on this file. When executing \texttt{lli} on a \texttt{.ll} file it directly interprets the code. The process executing the command inherits the standard output and input, for the users to be able to interact with the command (read) and to view the results (print). The file is then deleted.
+
+\section{Implementation}
+The implementation of the lexical analyser and the syntax analyser were reused for this part. So, in this section only the additions and the modifications will be shown.
+
+\subsection{AbstractSyntaxTree}
+In order to have a more readable code it has been decided to add a \texttt{semantics} package with a class for each semantic.
+These classes allow the construction of the abstract syntax tree.
+
+\subsubsection{Program}
+The program is a simple node with only one child, the code of the program.
+\begin{center}
+\begin{forest}
+[Program [Code]]
+\end{forest}
+\end{center}
+
+\subsubsection{Code}
+The code is composed of a list of instructions.
+
+\begin{center}
+\begin{forest}
+[Code [Instructions]]
+\end{forest}
+\end{center}
+
+\subsubsection{Instructions}
+All the instruction implements the \texttt{Instruction} interface. This interface allows these instructions to be represented together as known as \texttt{Instruction}. This interface has a function \texttt{dispatch}. This function allows the generator to generate the right code for the specific instruction. This removes the need of using the non-recommended \texttt{instanceof} functions.
+
+\paragraph{Assign}
+The assign instruction is composed of a \texttt{varname} and an arithmetic expression.
+
+\begin{center}
+\begin{forest}
+[Assign [Varname] [ArithmeticExpression]]
+\end{forest}
+\end{center}
+
+\paragraph{If}
+The if instruction is composed of a condition and two codes. One code that has to be executed when the condition is true and the other one has to be executed when the condition is false.
+
+\begin{center}
+\begin{forest}
+[If [Condition] [Code True] [Code False]]
+\end{forest}
+\end{center}
+
+\paragraph{While}
+The while instruction is composed of a condition and a code. The code is the one that has to be executed while the condition is true.
+
+\begin{center}
+\begin{forest}
+[While [Condition] [Code]]
+\end{forest}
+\end{center}
+
+\paragraph{Print}
+The print instruction is composed of a \texttt{varname}.
+
+\begin{center}
+\begin{forest}
+[Print [Varname]]
+\end{forest}
+\end{center}
+
+\paragraph{Read}
+The read instruction is composed of a \texttt{varname}.
+
+\begin{center}
+\begin{forest}
+[Read [Varname]]
+\end{forest}
+\end{center}
+
+\subsubsection{Condition}
+The condition is composed of two arithmetic expressions and an operator. The operator is the boolean operation that has to be executed on the two arithmetic expressions, it is either $=$, $!=$, $>$, $>=$, $<$ or $<=$.
+
+\begin{center}
+\begin{forest}
+[Condition [ArithmeticExpression Left] [Operator] [ArithmeticExpression Right]]
+\end{forest}
+\end{center}
+
+\subsubsection{ArithmeticExpression}
+In order to store the arithmetic expression, it has been decided to use a binary tree.
+The interior nodes of this binary tree will have as data an operator and the leaves will have a \texttt{varname} or a \texttt{number}.\\
+
+The following arithmetic expression is transformed into the following binary tree.
+
+\begin{center}
+\begin{tabular}{ m{6cm} m{6cm} }
+\begin{lstlisting}
+-2 + 3 * (6 + 1) / 5
+\end{lstlisting}
+&
+\begin{forest}
+[ArithmeticExpression [+ [-2] [/ [* [3] [+ [6] [1]]] [5]] ]]
+\end{forest}
+\end{tabular}
+\end{center}
+
+\subsection{CodeGenerator}
+The new class \texttt{CodeGenerator} has been added.
+It performs the semantic analysis while generating the code.
+Its \texttt{generate} function generates the code with the specified program as known as the root of the abstract syntax tree.
+It adds at the beginning of the generated code the code of two functions : read and println.
+While parsing the abstract tree it keeps a list of all variables. It allows the code generator to allocate memory for all the variables in the code and to detect when a variable is used before its assignment.\\
+
+For each variable the following instruction is added at the beginning of the main functions.
+
+\begin{lstlisting}
+    %variable = alloca i32
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item variable is the name of the variable.
+\end{itemize}
+
+
+\subsubsection{Program}
+It runs the code generation of its code and then adds the following instruction in order to end the program.
+
+\begin{lstlisting}
+    ret i32 0
+\end{lstlisting}
+
+\subsubsection{Code}
+It asks the different instructions it has to dispatch themselves to the right functions to generate them.
+
+\subsubsection{Assign}
+It assigns the result of its arithmetic expression to its \texttt{varname}.
+
+\begin{lstlisting}
+    store i32 %tempVariable , i32 * %variableName
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item tempVariable is the variable containing the result of its arithmetic expression.
+    \item variableName is the name of its variable.
+\end{itemize}
+
+\subsubsection{If}
+
+First it runs the code generation of its condition.\\
+
+Then it creates a new basic block, launches the code generation of its code when the condition is true then adds the following instruction.
+
+\begin{lstlisting}
+    br label %endLabel
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item endLabel is the name of the basic block containing the code after this if instruction.
+\end{itemize}
+
+After that, it does the same thing with the code when the condition is false.
+
+Finally, it creates a new basic block that will contain the code after this if instruction.
+
+\subsubsection{While}
+
+First it adds the following instruction.
+
+\begin{lstlisting}
+    br label %condLabel
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item condLabel is the name of the basic block containing the code of its condition.
+\end{itemize}
+
+Then it runs the code generation of its condition.
+
+After that it creates a new basic block, launches the code generation of its code and adds the following instruction.
+
+\begin{lstlisting}
+    br label %condLabel
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item condLabel is the name of the basic block containing the code of its condition.
+\end{itemize}
+
+Finally, it creates a new basic block that will contain the code after this while instruction.
+
+
+\subsubsection{Print}
+It prints the value of its \texttt{varname} on the standard output.
+\begin{lstlisting}
+    %tempVariable = load i32 , i32 * %variableName
+    call void @println(i32 %tempVariable)
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item tempVariable is a free variable.
+    \item variableName is the name of its variable.
+\end{itemize}
+
+\subsubsection{Read}
+It reads the value put on the standard input and assigns it to its \texttt{varname}.
+\begin{lstlisting}
+    %tempVariable = call i32 @readInt()
+    store i32 %tempVariable , i32 * %variableName
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item tempVariable is a free variable.
+    \item variableName is the name of its variable.
+\end{itemize}
+
+\subsubsection{Condition}
+It takes the values of its two arithmetic operations, then executes its operator on the two values and finally redirects the code accordingly to the value of the condition.
+\begin{lstlisting}
+    %condVariable = icmp operator i32 %variableA , %variableB
+    br i1 %condVariable , label %trueLabel , label %falseLabel
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item variableA is the variable that contains the result of its left arithmetic expression.
+    \item variableB is the variable that contains the result of its right arithmetic expression.
+    \item condVariable is a free variable.
+    \item operator : \texttt{eq} for $=$, \texttt{ne} for $!=$, \texttt{sgt} for $>$, \texttt{sge} for $>=$, \texttt{slt} for $<$ and \texttt{sle} for $<=$.
+    \item trueLabel is the label of the basic block to be executed when the conditon is true.
+    \item falseLabel is the label of the basic block to be executed when the conditon is false. 
+\end{itemize}
+
+\subsubsection{ArithmeticExpression}
+It takes its binary tree and runs the \texttt{node} method on its root. Finally, it returns the temporary variable where its value has been saved to.
+
+\paragraph{Node}
+
+It returns the temporary variable where its value has been saved to.\\
+
+\noindent Its value is the result of its operator on the values of its left child and its right child.
+
+\begin{lstlisting}
+    %result = operator i32 %resultLeft , %resultRight
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item result is a free variable.
+    \item operator : \texttt{add} for +, \texttt{sub} for -, \texttt{mul} for * and \texttt{sdiv} for /
+    \item resultLeft is the result of the left child.
+    \item resultRight is the result of the right child.
+\end{itemize}
+
+\paragraph{Leaf}
+It returns the temporary variable where its value has been saved to.\\
+
+\noindent The leaves can have two different types of data :
+
+\begin{itemize}
+    
+\item \texttt{Number}
+
+\begin{lstlisting}
+    %result = add i32 0 , number
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item result is a free variable.
+    \item variableName is the value of its number.
+\end{itemize}
+
+\item \texttt{Varname}
+
+\begin{lstlisting}
+    %result = load i32 , i32 * %variableName
+\end{lstlisting}
+
+\noindent\texttt{where}
+
+\begin{itemize}
+    \item result is a free variable.
+    \item variableName is the name of its variable.
+\end{itemize}
+
+\end{itemize}
+
+\subsection{Binary tree}
+The class \texttt{BinaryTree$<$T$>$} is an implementation of a binary tree. A binary tree is a tree that has at most two children. The T represents the type of the data it contains. In this project the T will always be \texttt{Symbol} so it will be omitted in this report.
+
+\subsection{SemanticException}
+A new type of exceptions \texttt{SemanticException} has been added to the \texttt{exception} package. As the other exceptions, its constructor only needs a message describing the error. It is only thrown when a variable is used before being defined as it is the only possible semantic error. 
+
+\subsection{Program manual}
+\noindent NAME
+
+part3.jar -- A compiler generator that generates the FORTR-S language code and interprets it.
+\\\\ 
+\noindent SYNOPSIS
+
+java -jar part3.jar \underline{inputFile.fs}
+
+java -jar part3.jar \underline{inputFile.fs} [-o \underline{outputFile.ll}]
+
+java -jar part3.jar \underline{inputFile.fs} [-exec] 
+\\\\ 
+\noindent DESCRIPTION 
+
+The \underline{inputFile.fs} specifies the path of the file to use, also the following options are available:
+\begin{itemize}
+    \item[] -o \hspace{10pt} Save the LLVM IR code in a file called \underline{outputFile.ll} instead of printing it
+    \item[] -exec Generate and directly interpret the LLVM IR code (without printing it or saving it in a file)
+\end{itemize}
+
+\noindent EXAMPLES
+
+java -jar part3.jar Factorial.fs -exec
+
+\section{Description of example files}
+Four example files were created.
+
+\begin{itemize}
+    \item ASSIGNexample.fs : This example contains an error as there is a print of a variable before its assignment.
+    \item ASSIGN.fs : This example contains also an assignment error as a variable has been used in an arithmetic operation before its assignment.
+    \item Largest.fs : This example does not contain any error. It also shows that the -exec option works flawlessly, as the IO operations between the processes are well detected.
+    \item OPERATORSexample.fs : This example does not contain any error. It shows only that all the logical operators work fine.
+\end{itemize}
+
+For each source code example that does not contain any error there is a ”.ll” file that can be executed with the $lli$ command.
+
+\section{Conclusion}
+In this part of the project, a semantic analyser has been implemented. This parser is the continuation of the other parts and the final compiler phases. The purpose of the semantic parser is to take the syntax analysis tree generated by the parser and transform it into an abstract syntax tree in order to be able to interpret it and generate executable code using the lli command.
+By implementing this semantic analyser, the construction of a complete compiler for the FORTR-S language is well finished. \\
+
+To summarize, this project has been divided into three main parts, each one dealing with a compiler component. \\
+
+The first part deals with the lexical analysis and the use of Jflex to create a deterministic automata to check the input file and generate its tokens. \\
+
+The second part was the syntax analyser where the notion of grammar was introduced. The grammar is intended to deal with rules that cannot be verified by the first part, for example the problem of multiple nested comments. The grammar uses for this purpose the first and follow which will also be reused to complete the action table. Once the action table has been defined, the time comes to create a parse tree that represents the left-most derivation obtained by the syntax analyser.
+
+Finally, the last part concerns the semantic analyser. In this part, the goal was to gather all the other parts and to interpret them to obtain an executable code for the input file. \\
+
+As it can be seen, building a compiler is a difficult task that requires a lot of work to handle all possible cases. The implementation of the structure must also be well designed to allow the easy addition and/or deletion of new keywords, operations and additional types.
+
+\end{document}
 
