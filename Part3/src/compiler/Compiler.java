@@ -13,8 +13,6 @@ import java.util.List;
  */
 public class Compiler {
 
-    private Parser parser;
-
     /**
      * Create a new compiler.
      */
@@ -26,14 +24,20 @@ public class Compiler {
      * @param filePath The path of the file containing the code
      * @param options The options
      */
-    public void compile(String filePath, List<Option> options){
+    public void compile(String filePath, List<Option> options) {
         try(FileReader fileReader = new FileReader(filePath)) {
             Scanner scanner = new Scanner(fileReader);
             List<Symbol> tokens = scanner.scan();
-            this.parser = new Parser(tokens);
+
+            Parser parser = new Parser(tokens);
             parser.parse();
-            optionsHandler(options);
-        } catch (IOException | SyntaxException | LexicalException e) {
+            Program program = new Program(parser.getParseTree());
+
+            CodeGenerator codeGenerator = new CodeGenerator();
+            String llvmCode = codeGenerator.generate(program);
+
+            optionsHandler(options, llvmCode);
+        } catch (IOException | SyntaxException | LexicalException | SemanticException e) {
             System.err.println(e.getMessage());
         }
     }
@@ -42,33 +46,26 @@ public class Compiler {
      * Handle the options.
      *
      * @param options The options
+     * @param llvmCode The llvm code
      */
-    private void optionsHandler(List<Option> options) {
-
-        CodeGenerator codeGenerator = new CodeGenerator();
-        String llvmcode = null;
-        try {
-            llvmcode = codeGenerator.generate(new Program(parser.getParseTree()));
-        } catch (SemanticException e) {
-            e.printStackTrace();
-        }
+    private void optionsHandler(List<Option> options, String llvmCode) {
 
         boolean flag = false;
         for (Option option : options) {
             switch (option.getLabel()) {
                 case "-o":
-                    saveLLVMCode(llvmcode, option.getArgument());
+                    saveLLVMCode(llvmCode, option.getArgument());
                     flag = true;
                     break;
                 case "-exec":
-                    executeLLVMCode(llvmcode);
+                    executeLLVMCode(llvmCode);
                     flag = true;
                     break;
             }
         }
 
         if (!flag) {
-            System.out.println(llvmcode);
+            System.out.println(llvmCode);
         }
     }
 
