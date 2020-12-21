@@ -356,7 +356,7 @@ public class CodeGenerator {
         String var = getNewTempVariable();
         switch (atom.getType()) {
             case NUMBER:
-                this.currentBasicBlock.add("%" + var + " = add i32 0, " + atom.getValue());
+                this.currentBasicBlock.add("%" + var + " = add i32 0 , " + atom.getValue());
                 break;
             case VARNAME:
                 String variableName = (String) atom.getValue();
