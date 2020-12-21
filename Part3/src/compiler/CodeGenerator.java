@@ -293,7 +293,17 @@ public class CodeGenerator {
         String variableA = handleArithmeticExpression(condition.getLeftMember());
         String variableB = handleArithmeticExpression(condition.getRightMember());
 
-        String operator = (condition.getOperator().equals("="))? "eq" : "sgt";
+        String operator = "eq";
+
+        switch (condition.getOperator()) {
+            case "=": operator = "eq"; break;
+            case "!=": operator = "ne"; break;
+            case ">": operator = "sgt"; break;
+            case ">=": operator = "sge"; break;
+            case "<": operator = "slt"; break;
+            case "<=": operator = "sle"; break;
+        }
+
         String condVariable = getNewTempVariable();
         this.currentBasicBlock.add("%" + condVariable + " = icmp " + operator + " i32 %" + variableA + " , %" + variableB);
         this.currentBasicBlock.add("br i1 %" + condVariable + " , label %" + trueLabel + " , label %" + falseLabel);

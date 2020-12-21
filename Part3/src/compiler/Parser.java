@@ -268,7 +268,11 @@ public class Parser {
             case ENDLINE: // Epsilon
             case RPAREN:
             case EQ:
+            case NEQ:
             case GT:
+            case GTE:
+            case LT:
+            case LTE:
                 return null;
 
             default:
@@ -327,7 +331,11 @@ public class Parser {
             case MINUS:
             case PLUS:
             case EQ:
+            case NEQ:
             case GT:
+            case GTE:
+            case LT:
+            case LTE:
                 return null;
 
             default:
@@ -481,9 +489,29 @@ public class Parser {
                 match(LexicalUnit.EQ);
                 break;
 
+            case NEQ:
+                list.add(new ParseTree(getCurrentToken()));
+                match(LexicalUnit.NEQ);
+                break;
+
             case GT:
                 list.add(new ParseTree(getCurrentToken()));
                 match(LexicalUnit.GT);
+                break;
+
+            case GTE:
+                list.add(new ParseTree(getCurrentToken()));
+                match(LexicalUnit.GTE);
+                break;
+
+            case LT:
+                list.add(new ParseTree(getCurrentToken()));
+                match(LexicalUnit.LT);
+                break;
+
+            case LTE:
+                list.add(new ParseTree(getCurrentToken()));
+                match(LexicalUnit.LTE);
                 break;
 
             default:

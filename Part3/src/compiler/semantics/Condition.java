@@ -18,7 +18,7 @@ public class Condition {
     public Condition(ParseTree parseTree) {
         this.leftMember = new ArithmeticExpression(parseTree.getChildren().get(0));
         this.rightMember = new ArithmeticExpression(parseTree.getChildren().get(2));
-        this.operator = (String) parseTree.getChildren().get(1).getLabel().getValue();
+        this.operator = (String) parseTree.getChildren().get(1).getChildren().get(0).getLabel().getValue();
     }
 
     /**

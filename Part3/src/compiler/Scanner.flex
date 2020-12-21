@@ -112,7 +112,11 @@ EndOfLine = \n|\r\n|\r
     "("		{return new Symbol(LexicalUnit.LPAREN,yyline, yycolumn, yytext());}
     ")"		{return new Symbol(LexicalUnit.RPAREN,yyline, yycolumn, yytext());}
     "="		{return new Symbol(LexicalUnit.EQ,yyline, yycolumn, yytext());}
+    "!="	{return new Symbol(LexicalUnit.NEQ,yyline, yycolumn, yytext());}
     ">"		{return new Symbol(LexicalUnit.GT,yyline, yycolumn, yytext());}
+    ">="		{return new Symbol(LexicalUnit.GTE,yyline, yycolumn, yytext());}
+    "<"		{return new Symbol(LexicalUnit.LT,yyline, yycolumn, yytext());}
+    "<="		{return new Symbol(LexicalUnit.LTE,yyline, yycolumn, yytext());}
 
     // End of line
     {EndOfLine} {return new Symbol(LexicalUnit.ENDLINE,yyline, yycolumn, "\\n");}
